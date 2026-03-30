@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ResuAI – Website Walkthrough</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--accent:#3b82f6;--accent2:#06b6d4;--text:#f0f6ff;--muted:#7a96b8;--bg:#050d1a;--bg2:#0a1628;--bg3:#0f1e35;--border:rgba(59,130,246,0.15)}
+body{font-family:'DM Sans',sans-serif;background:#000;color:var(--text);height:100vh;overflow:hidden;display:flex;flex-direction:column}
+/* TOP BAR */
+.topbar{background:#111;border-bottom:1px solid #1f1f1f;padding:0.65rem 1.5rem;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.logo{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800}.logo span{color:#3b82f6}
+.badge{background:#1a1a2e;border:1px solid #2a2a4a;border-radius:100px;padding:0.28rem 0.9rem;font-size:0.75rem;color:#93c5fd}
+.counter{font-size:0.78rem;color:#444}
+/* LAYOUT */
+.body{flex:1;display:flex;overflow:hidden}
+/* LEFT NAV */
+.leftnav{width:190px;background:#0a0a0a;border-right:1px solid #1a1a1a;padding:0.8rem 0;flex-shrink:0;overflow-y:auto}
+.leftnav-title{font-size:0.62rem;letter-spacing:2px;text-transform:uppercase;color:#333;padding:0 0.9rem;margin-bottom:0.5rem}
+.lni{display:flex;align-items:center;gap:0.5rem;padding:0.45rem 0.9rem;cursor:pointer;border-left:2px solid transparent;transition:all 0.18s}
+.lni:hover{background:#111;color:#fff}
+.lni.active{background:#0f1e35;border-left-color:#3b82f6;color:#93c5fd}
+.lni.done{color:#333}
+.lni .dot{width:7px;height:7px;border-radius:50%;background:#222;flex-shrink:0;transition:background 0.2s}
+.lni.active .dot,.lni.done .dot{background:#3b82f6}
+.lni span{font-size:0.77rem}
+/* BROWSER */
+.screenarea{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.browserbar{background:#181818;border-bottom:1px solid #222;padding:0.45rem 0.9rem;display:flex;align-items:center;gap:0.6rem;flex-shrink:0}
+.dots{display:flex;gap:4px}
+.dots span{width:9px;height:9px;border-radius:50%}
+.dr{background:#ff5f57}.dy{background:#febc2e}.dg{background:#28c840}
+.urlbar{flex:1;background:#111;border:1px solid #252525;border-radius:4px;padding:0.25rem 0.7rem;font-size:0.73rem;color:#555;font-family:monospace}
+/* SCREEN */
+.screen{flex:1;overflow:hidden;position:relative}
+.slide{position:absolute;inset:0;opacity:0;transition:opacity 0.35s;overflow-y:auto;display:none}
+.slide.active{opacity:1;display:block}
+/* EXPLANATION */
+.explainbar{background:#0a1020;border-top:1px solid rgba(59,130,246,0.12);padding:0.55rem 1.2rem;display:flex;align-items:center;gap:0.6rem;flex-shrink:0;min-height:46px}
+.eicon{font-size:1.1rem;flex-shrink:0}
+.etext{font-size:0.78rem;color:#93c5fd;line-height:1.5}
+/* CONTROLS */
+.controls{background:#111;border-top:1px solid #1f1f1f;padding:0.65rem 1.2rem;display:flex;align-items:center;gap:0.8rem;flex-shrink:0}
+.pbar{flex:1;height:3px;background:#1f1f1f;border-radius:100px;overflow:hidden}
+.pfill{height:100%;background:linear-gradient(90deg,#3b82f6,#06b6d4);border-radius:100px;transition:width 0.4s}
+.nbtn{background:#1a1a1a;border:1px solid #2a2a2a;color:#ccc;padding:0.45rem 1.1rem;border-radius:7px;font-size:0.8rem;cursor:pointer;transition:all 0.18s;font-family:'DM Sans',sans-serif}
+.nbtn:hover{background:#222;border-color:#444}.nbtn:disabled{opacity:0.25;cursor:not-allowed}
+.nbtn.prim{background:#3b82f6;border-color:#3b82f6;color:#fff}.nbtn.prim:hover{background:#2563eb}
+.sinfo{font-size:0.72rem;color:#333;min-width:80px}
+
+/* ═══ SLIDE DESIGNS ═══ */
+/* nav components */
+.snav{padding:0.55rem 3%;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(59,130,246,0.1);background:rgba(5,13,26,0.97);position:sticky;top:0;z-index:5}
+.snav-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1rem}.snav-logo span{color:#3b82f6}
+.snav-links{display:flex;gap:1.1rem}.snav-links a{font-size:0.72rem;color:#7a96b8;text-decoration:none}
+.snav-btn{background:#3b82f6;color:#fff;padding:0.28rem 0.85rem;border-radius:5px;font-size:0.72rem;border:none;cursor:pointer}
+
+/* SLIDE 0 – LANDING */
+#s0{background:#050d1a}
+.hero{text-align:center;padding:2rem 4% 1.5rem;background:radial-gradient(ellipse 55% 35% at 50% 0%,rgba(59,130,246,0.1),transparent)}
+.hero-badge{display:inline-block;background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.22);color:#93c5fd;font-size:0.68rem;padding:0.22rem 0.75rem;border-radius:100px;margin-bottom:0.7rem}
+.hero h1{font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800;line-height:1.15;margin-bottom:0.5rem}
+.hero h1 .hl{background:linear-gradient(135deg,#3b82f6,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{color:#7a96b8;font-size:0.78rem;max-width:380px;margin:0 auto 1rem}
+.hbtns{display:flex;gap:0.5rem;justify-content:center;margin-bottom:1.2rem}
+.bp{background:#3b82f6;color:#fff;padding:0.45rem 1.1rem;border-radius:6px;font-size:0.76rem;border:none;cursor:pointer}
+.bo{background:transparent;color:#f0f6ff;padding:0.45rem 1.1rem;border-radius:6px;font-size:0.76rem;border:1px solid rgba(59,130,246,0.2);cursor:pointer}
+.hstats{display:flex;gap:1.8rem;justify-content:center;margin-bottom:1.5rem}
+.hstat{text-align:center}.hstat-n{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800}.hstat-l{font-size:0.65rem;color:#7a96b8}
+.fgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:0.6rem;padding:0 3%}
+.fcard{background:rgba(15,30,53,0.7);border:1px solid rgba(59,130,246,0.1);border-radius:9px;padding:0.8rem}
+.fcard-icon{font-size:1.1rem;margin-bottom:0.35rem}
+.fcard h4{font-size:0.75rem;font-weight:600;margin-bottom:0.25rem}
+.fcard p{font-size:0.68rem;color:#7a96b8;line-height:1.45}
+
+/* SLIDE 1 – SIGNUP */
+#s1{background:#050d1a;display:flex;align-items:center;justify-content:center;padding:1.5rem}
+.auth-card{background:rgba(15,30,53,0.95);border:1px solid rgba(59,130,246,0.18);border-radius:14px;padding:1.6rem;width:100%;max-width:340px}
+.auth-card h2{font-family:'Syne',sans-serif;font-size:1.1rem;text-align:center;margin-bottom:0.25rem}
+.auth-card .asub{color:#7a96b8;font-size:0.74rem;text-align:center;margin-bottom:1rem}
+.rtabs{display:grid;grid-template-columns:1fr 1fr;gap:3px;background:#0a1628;border-radius:7px;padding:3px;margin-bottom:0.9rem}
+.rtab{padding:0.38rem;border-radius:5px;border:none;background:transparent;color:#7a96b8;font-size:0.73rem;cursor:pointer;text-align:center;font-family:'DM Sans',sans-serif}
+.rtab.on{background:#3b82f6;color:#fff}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;margin-bottom:0.55rem}
+.fg{margin-bottom:0.55rem}
+.fg label,.frow label{display:block;font-size:0.67rem;color:#7a96b8;margin-bottom:0.22rem}
+.fg input,.fg select,.frow input{width:100%;background:#0f1e35;border:1px solid rgba(59,130,246,0.14);border-radius:6px;padding:0.42rem 0.65rem;color:#f0f6ff;font-size:0.76rem;outline:none;font-family:'DM Sans',sans-serif}
+.asub-btn{width:100%;background:#3b82f6;color:#fff;border:none;border-radius:7px;padding:0.6rem;font-size:0.82rem;font-weight:500;cursor:pointer;margin-top:0.3rem}
+
+/* SLIDE 2 – LOGIN */
+#s2{background:#050d1a;display:flex;height:100%}
+.login-left{flex:1;background:#080f1c;border-right:1px solid rgba(59,130,246,0.08);padding:2rem 1.5rem;display:flex;flex-direction:column;justify-content:center}
+.login-left h2{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;margin-bottom:0.5rem}
+.login-left p{color:#7a96b8;font-size:0.74rem;margin-bottom:0.9rem;line-height:1.6}
+.fli{display:flex;align-items:center;gap:0.4rem;font-size:0.72rem;color:#7a96b8;margin-bottom:0.35rem}
+.fli::before{content:'✓';color:#06b6d4;font-size:0.72rem}
+.tbox{background:rgba(15,30,53,0.7);border:1px solid rgba(59,130,246,0.12);border-radius:9px;padding:0.8rem;margin-top:1rem}
+.tbox p{font-size:0.7rem;color:#7a96b8;font-style:italic;margin-bottom:0.45rem}
+.tname{font-size:0.7rem;font-weight:500}.trole{font-size:0.65rem;color:#7a96b8}
+.login-right{flex:1;display:flex;align-items:center;justify-content:center;padding:1.5rem}
+
+/* SLIDE 3 – UPLOAD */
+#s3{background:#050d1a;padding:1rem 2.5%}
+.page-head{margin-bottom:0.8rem}
+.page-head h2{font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;margin-bottom:0.2rem}
+.page-head p{color:#7a96b8;font-size:0.73rem}
+.usteps{display:flex;border-bottom:2px solid rgba(59,130,246,0.08);margin-bottom:0.8rem}
+.ustep{flex:1;padding:0.45rem;font-size:0.72rem;color:#7a96b8;border-bottom:2px solid transparent;margin-bottom:-2px;display:flex;align-items:center;gap:0.35rem}
+.ustep.on{color:#3b82f6;border-bottom-color:#3b82f6}
+.uzone{border:2px dashed rgba(59,130,246,0.22);border-radius:12px;padding:2rem;text-align:center;margin-bottom:0.8rem;background:rgba(59,130,246,0.02)}
+.uzone-icon{font-size:2rem;display:block;margin-bottom:0.5rem}
+.uzone h3{font-size:0.88rem;margin-bottom:0.3rem}
+.uzone p{color:#7a96b8;font-size:0.72rem}
+.fchips{display:flex;justify-content:center;gap:0.35rem;margin-top:0.45rem}
+.fchip{background:#0f1e35;border:1px solid rgba(59,130,246,0.1);border-radius:4px;padding:0.12rem 0.45rem;font-size:0.65rem;color:#7a96b8}
+.tips{display:grid;grid-template-columns:repeat(4,1fr);gap:0.5rem}
+.tipc{background:rgba(15,30,53,0.7);border:1px solid rgba(59,130,246,0.08);border-radius:8px;padding:0.65rem}
+.tipc h5{font-size:0.7rem;font-weight:600;margin-bottom:0.22rem}
+.tipc p{font-size:0.65rem;color:#7a96b8;line-height:1.4}
+
+/* SLIDE 4 – ANALYZING */
+#s4{background:#050d1a;display:flex;align-items:center;justify-content:center;padding:1.5rem}
+.abox{text-align:center;max-width:340px}
+.aemoji{font-size:2.8rem;margin-bottom:0.9rem;display:block;animation:pu 2s infinite}
+@keyframes pu{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.abox h2{font-family:'Syne',sans-serif;font-size:1.1rem;margin-bottom:0.3rem}
+.abox p{color:#7a96b8;font-size:0.76rem;margin-bottom:1rem}
+.atasks{display:flex;flex-direction:column;gap:0.42rem;margin-bottom:1rem;text-align:left}
+.atask{display:flex;align-items:center;gap:0.6rem;background:rgba(15,30,53,0.7);border:1px solid rgba(59,130,246,0.1);border-radius:7px;padding:0.5rem 0.75rem}
+.ati{font-size:0.85rem;min-width:16px}.atl{flex:1;font-size:0.74rem;color:#7a96b8}
+.atd{font-size:0.68rem;color:#22c55e}.atr{font-size:0.68rem;color:#06b6d4}.atw{font-size:0.68rem;color:#333}
+.scanbar{height:4px;background:#0f1e35;border-radius:100px;overflow:hidden}
+.scanfill{height:100%;background:linear-gradient(90deg,#3b82f6,#06b6d4);width:75%;border-radius:100px}
+
+/* SLIDE 5 – RESULTS */
+#s5{background:#050d1a;padding:0.9rem 2.5%}
+.rgrid{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem}
+.rcard{background:rgba(15,30,53,0.7);border:1px solid rgba(59,130,246,0.1);border-radius:11px;padding:0.9rem}
+.rcard h3{font-family:'Syne',sans-serif;font-size:0.8rem;font-weight:700;margin-bottom:0.7rem}
+.scorecircle{width:65px;height:65px;border-radius:50%;background:conic-gradient(#3b82f6 0% 82%,#0f1e35 82%);display:flex;align-items:center;justify-content:center;margin:0 auto 0.6rem;position:relative}
+.scorecircle::before{content:'';position:absolute;width:47px;height:47px;border-radius:50%;background:rgba(15,30,53,0.98)}
+.scorenum{position:relative;z-index:1;font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;color:#3b82f6}
+.sline{display:flex;justify-content:space-between;font-size:0.68rem;padding:0.28rem 0;border-bottom:1px solid rgba(59,130,246,0.06)}
+.sline:last-child{border:none}.sline span{color:#7a96b8}.sline strong{color:#f0f6ff}
+.stags{display:flex;flex-wrap:wrap;gap:0.28rem}
+.st{background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.18);border-radius:4px;padding:0.12rem 0.45rem;font-size:0.65rem;color:#93c5fd}
+.st.w{background:rgba(234,179,8,0.08);border-color:rgba(234,179,8,0.18);color:#fde047}
+.jmatch{display:flex;align-items:center;gap:0.5rem;padding:0.45rem;background:#0a1628;border-radius:6px;margin-bottom:0.35rem}
+.jms{font-family:'Syne',sans-serif;font-size:0.85rem;font-weight:800;min-width:33px}
+.jmi strong{display:block;font-size:0.72rem}.jmi span{font-size:0.65rem;color:#7a96b8}
+.mbar{height:3px;background:rgba(59,130,246,0.08);border-radius:100px;margin-top:2px;overflow:hidden}
+.mfill{height:100%;background:linear-gradient(90deg,#3b82f6,#06b6d4);border-radius:100px}
+.impi{display:flex;gap:0.35rem;margin-bottom:0.35rem;font-size:0.68rem;color:#7a96b8}
+.impi::before{content:'→';color:#3b82f6;flex-shrink:0}
+
+/* SLIDE 6 – DASHBOARD */
+#s6{background:#050d1a;display:flex;height:100%}
+.dsb{width:150px;background:#080f1c;border-right:1px solid rgba(59,130,246,0.08);padding:0.7rem 0;flex-shrink:0}
+.dsb-logo{font-family:'Syne',sans-serif;font-size:0.9rem;font-weight:800;padding:0 0.75rem 0.7rem;border-bottom:1px solid rgba(59,130,246,0.08);margin-bottom:0.4rem}.dsb-logo span{color:#3b82f6}
+.dni{display:flex;align-items:center;gap:0.35rem;padding:0.38rem 0.75rem;font-size:0.7rem;color:#7a96b8;border-left:2px solid transparent;cursor:pointer}
+.dni.on{background:rgba(59,130,246,0.07);color:#93c5fd;border-left-color:#3b82f6}
+.dmain{flex:1;padding:0.9rem;overflow-y:auto}
+.dtop{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.7rem}
+.dtop h1{font-family:'Syne',sans-serif;font-size:0.9rem;font-weight:800}
+.dtop p{font-size:0.65rem;color:#7a96b8}
+.dstats{display:grid;grid-template-columns:repeat(4,1fr);gap:0.45rem;margin-bottom:0.75rem}
+.dstat{background:rgba(15,30,53,0.7);border:1px solid rgba(59,130,246,0.09);border-radius:9px;padding:0.6rem}
+.dstat-l{font-size:0.62rem;color:#7a96b8;margin-bottom:0.2rem}
+.dstat-n{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800}
+.dstat-c{font-size:0.6rem;color:#22c55e}
+.djcard{background:rgba(15,30,53,0.7);border:1px solid rgba(59,130,246,0.08);border-radius:9px;padding:0.65rem;margin-bottom:0.45rem;display:flex;align-items:center;gap:0.55rem}
+.dci{width:30px;height:30px;border-radius:6px;background:#0f1e35;display:flex;align-items:center;justify-content:center;font-size:0.9rem;flex-shrink:0}
+.dji{flex:1}.dji strong{display:block;font-size:0.74rem}.dji span{font-size:0.65rem;color:#7a96b8}
+.dmb{background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.18);border-radius:100px;padding:0.12rem 0.5rem;font-size:0.65rem;color:#86efac;white-space:nowrap}
+
+/* SLIDE 7 – JOBS */
+#s7{background:#050d1a;display:flex;height:100%}
+.jfsb{width:150px;background:#080f1c;border-right:1px solid rgba(59,130,246,0.08);padding:0.75rem;flex-shrink:0}
+.jfsb h3{font-size:0.63rem;letter-spacing:1.5px;text-transform:uppercase;color:#333;margin-bottom:0.5rem}
+.fopt{display:flex;align-items:center;gap:0.35rem;margin-bottom:0.3rem;font-size:0.7rem;color:#7a96b8}
+.fopt input{accent-color:#3b82f6;width:11px;height:11px}
+.jmain{flex:1;padding:0.75rem;overflow-y:auto}
+.jsearchbar{display:flex;gap:0.35rem;margin-bottom:0.6rem}
+.jsearch{flex:1;background:#0f1e35;border:1px solid rgba(59,130,246,0.13);border-radius:6px;padding:0.4rem 0.7rem;color:#f0f6ff;font-size:0.74rem;outline:none;font-family:'DM Sans',sans-serif}
+.jsb-btn{background:#3b82f6;color:#fff;border:none;border-radius:6px;padding:0.4rem 0.7rem;font-size:0.74rem;cursor:pointer}
+.jcard{background:rgba(15,30,53,0.7);border:1px solid rgba(59,130,246,0.08);border-radius:9px;padding:0.65rem;margin-bottom:0.45rem;display:flex;gap:0.55rem;cursor:pointer;transition:border-color 0.18s}
+.jcard:hover{border-color:rgba(59,130,246,0.3)}
+.jci{width:34px;height:34px;border-radius:6px;background:#0f1e35;display:flex;align-items:center;justify-content:center;font-size:0.95rem;flex-shrink:0}
+.jii{flex:1}.jii strong{display:block;font-size:0.75rem;margin-bottom:0.18rem}
+.jmeta{display:flex;gap:0.45rem;flex-wrap:wrap}
+.jmeta span{font-size:0.65rem;color:#7a96b8}
+.jright{display:flex;flex-direction:column;align-items:flex-end;gap:0.35rem}
+.jbadge{background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.18);border-radius:100px;padding:0.12rem 0.5rem;font-size:0.67rem;color:#93c5fd;white-space:nowrap}
+.japply{background:#3b82f6;color:#fff;border:none;border-radius:5px;padding:0.22rem 0.55rem;font-size:0.67rem;cursor:pointer}
+
+/* SLIDE 8 – ADMIN */
+#s8{background:#050d1a;display:flex;height:100%}
+.asb{width:150px;background:#080f1c;border-right:1px solid rgba(59,130,246,0.08);padding:0.7rem 0;flex-shrink:0}
+.asb-logo{font-family:'Syne',sans-serif;font-size:0.9rem;font-weight:800;padding:0 0.75rem 0.4rem}.asb-logo span{color:#3b82f6}
+.emp-tag{display:inline-block;background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.18);border-radius:4px;padding:0.12rem 0.5rem;font-size:0.62rem;color:#d8b4fe;margin:0 0.75rem 0.6rem}
+.ani{display:flex;align-items:center;gap:0.35rem;padding:0.38rem 0.75rem;font-size:0.7rem;color:#7a96b8;border-left:2px solid transparent}
+.ani.on{background:rgba(59,130,246,0.07);color:#93c5fd;border-left-color:#3b82f6}
+.amain{flex:1;padding:0.9rem;overflow-y:auto}
+.atopbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.7rem}
+.atopbar h1{font-family:'Syne',sans-serif;font-size:0.9rem;font-weight:800}
+.apostbtn{background:#3b82f6;color:#fff;border:none;border-radius:6px;padding:0.32rem 0.7rem;font-size:0.7rem;cursor:pointer}
+.astats{display:grid;grid-template-columns:repeat(4,1fr);gap:0.45rem;margin-bottom:0.75rem}
+.astat{background:rgba(15,30,53,0.7);border:1px solid rgba(59,130,246,0.09);border-radius:9px;padding:0.55rem}
+.astat-l{font-size:0.6rem;color:#7a96b8;margin-bottom:0.18rem}
+.astat-n{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800}
+.atable{width:100%;border-collapse:collapse;background:rgba(15,30,53,0.7);border:1px solid rgba(59,130,246,0.09);border-radius:9px;overflow:hidden}
+.atable th{font-size:0.6rem;letter-spacing:1px;text-transform:uppercase;color:#7a96b8;padding:0.45rem 0.65rem;border-bottom:1px solid rgba(59,130,246,0.08);text-align:left}
+.atable td{padding:0.5rem 0.65rem;font-size:0.7rem;border-bottom:1px solid rgba(59,130,246,0.04)}
+.atable tr:last-child td{border:none}
+.aibar{display:flex;align-items:center;gap:0.35rem}
+.aibarinner{flex:1;height:4px;background:#0f1e35;border-radius:100px;overflow:hidden;min-width:36px}
+.aibarfill{height:100%;background:linear-gradient(90deg,#3b82f6,#06b6d4);border-radius:100px}
+.spill{padding:0.12rem 0.45rem;border-radius:100px;font-size:0.62rem}
+.sp-s{background:rgba(34,197,94,0.1);color:#86efac}
+.sp-r{background:rgba(59,130,246,0.1);color:#93c5fd}
+.sp-v{background:rgba(234,179,8,0.1);color:#fde047}
+.abtn{border-radius:4px;border:1px solid;padding:0.18rem 0.45rem;font-size:0.62rem;cursor:pointer;background:none}
+.abtn.v{color:#3b82f6;border-color:rgba(59,130,246,0.18)}
+.abtn.sh{color:#22c55e;border-color:rgba(34,197,94,0.18)}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">Resu<span>AI</span> <span style="font-size:0.7rem;color:#333;font-weight:400;margin-left:0.4rem">· Website Tour</span></div>
+  <div class="badge" id="pageBadge">🏠 Landing Page</div>
+  <div class="counter" id="pageCounter">1 / 9</div>
+</div>
+
+<div class="body">
+  <!-- LEFT NAV -->
+  <div class="leftnav">
+    <div class="leftnav-title">All Pages</div>
+    <div class="lni active" id="li0" onclick="go(0)"><div class="dot"></div><span>🏠 Home</span></div>
+    <div class="lni" id="li1" onclick="go(1)"><div class="dot"></div><span>📝 Sign Up</span></div>
+    <div class="lni" id="li2" onclick="go(2)"><div class="dot"></div><span>🔐 Login</span></div>
+    <div class="lni" id="li3" onclick="go(3)"><div class="dot"></div><span>📤 Upload</span></div>
+    <div class="lni" id="li4" onclick="go(4)"><div class="dot"></div><span>🤖 AI Scan</span></div>
+    <div class="lni" id="li5" onclick="go(5)"><div class="dot"></div><span>📊 Results</span></div>
+    <div class="lni" id="li6" onclick="go(6)"><div class="dot"></div><span>🖥 Dashboard</span></div>
+    <div class="lni" id="li7" onclick="go(7)"><div class="dot"></div><span>💼 Jobs</span></div>
+    <div class="lni" id="li8" onclick="go(8)"><div class="dot"></div><span>🏢 Employer</span></div>
+  </div>
+
+  <div class="screenarea">
+    <div class="browserbar">
+      <div class="dots"><span class="dr"></span><span class="dy"></span><span class="dg"></span></div>
+      <div class="urlbar" id="urlbar">https://resuai.onrender.com</div>
+    </div>
+
+    <div class="screen">
+
+      <!-- S0: LANDING -->
+      <div class="slide active" id="s0">
+        <div class="snav"><div class="snav-logo">Resu<span>AI</span></div><div class="snav-links"><a>Features</a><a>How It Works</a><a>Demo</a></div><button class="snav-btn">Upload Resume</button></div>
+        <div class="hero">
+          <div class="hero-badge">🤖 AI-Powered Hiring Platform</div>
+          <h1>Match the <span class="hl">Right Talent</span><br/>to the Right Job</h1>
+          <p>Upload your resume and our AI matches you with the most relevant jobs in seconds.</p>
+          <div class="hbtns"><button class="bp">Upload Resume →</button><button class="bo">How It Works</button></div>
+          <div class="hstats">
+            <div class="hstat"><div class="hstat-n">95%</div><div class="hstat-l">Accuracy</div></div>
+            <div class="hstat"><div class="hstat-n">10x</div><div class="hstat-l">Faster</div></div>
+            <div class="hstat"><div class="hstat-n">500+</div><div class="hstat-l">Jobs</div></div>
+            <div class="hstat"><div class="hstat-n">Free</div><div class="hstat-l">To Start</div></div>
+          </div>
+        </div>
+        <div class="fgrid">
+          <div class="fcard"><div class="fcard-icon">📄</div><h4>Smart Resume Parsing</h4><p>AI reads & extracts your skills automatically</p></div>
+          <div class="fcard"><div class="fcard-icon">🎯</div><h4>Precision Job Matching</h4><p>Jobs ranked by how well they match your profile</p></div>
+          <div class="fcard"><div class="fcard-icon">🔍</div><h4>Automated Screening</h4><p>Employers screen 100s of resumes in minutes</p></div>
+          <div class="fcard"><div class="fcard-icon">📊</div><h4>Analytics Dashboard</h4><p>Track your applications & resume score</p></div>
+          <div class="fcard"><div class="fcard-icon">⚡</div><h4>Instant Results</h4><p>Job matches delivered in under 3 seconds</p></div>
+          <div class="fcard"><div class="fcard-icon">🔒</div><h4>Secure & Private</h4><p>Your data is encrypted and never shared</p></div>
+        </div>
+      </div>
+
+      <!-- S1: SIGNUP -->
+      <div class="slide" id="s1">
+        <div class="auth-card">
+          <h2>Create Your Account</h2>
+          <div class="asub">Join thousands finding jobs with AI</div>
+          <div class="rtabs"><button class="rtab on">👤 Job Seeker</button><button class="rtab">🏢 Employer</button></div>
+          <div class="frow">
+            <div><label>First Name</label><input type="text" value="Keerthi"/></div>
+            <div><label>Last Name</label><input type="text" value="Gangapatnam"/></div>
+          </div>
+          <div class="fg"><label>Email Address</label><input type="email" value="keerthi@example.com"/></div>
+          <div class="fg"><label>Domain / Field</label><select><option>Data Analytics</option></select></div>
+          <div class="fg"><label>Password</label><input type="password" value="Test@1234"/></div>
+          <div class="fg"><label>Confirm Password</label><input type="password" value="Test@1234"/></div>
+          <button class="asub-btn">Create Account →</button>
+        </div>
+      </div>
+
+      <!-- S2: LOGIN -->
+      <div class="slide" id="s2">
+        <div class="login-left">
+          <h2>Welcome Back to ResuAI</h2>
+          <p>Your AI career platform that matches you with the right jobs automatically.</p>
+          <div class="fli">AI resume screening & analysis</div>
+          <div class="fli">94%+ job matching accuracy</div>
+          <div class="fli">Real-time application tracking</div>
+          <div class="fli">Resume improvement tips</div>
+          <div class="tbox">
+            <p>"ResuAI matched me with a Data Analyst role at TCS in just 3 days of uploading my resume!"</p>
+            <div class="tname">Keerthi G.</div>
+            <div class="trole">Data Analyst, TCS Hyderabad</div>
+          </div>
+        </div>
+        <div class="login-right">
+          <div class="auth-card" style="max-width:260px">
+            <h2>Sign In</h2>
+            <div class="asub">Access your dashboard</div>
+            <div class="fg"><label>Email</label><input type="email" value="keerthi@example.com"/></div>
+            <div class="fg"><label>Password</label><input type="password" value="Test@1234"/></div>
+            <button class="asub-btn">Sign In →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- S3: UPLOAD -->
+      <div class="slide" id="s3">
+        <div class="snav"><div class="snav-logo">Resu<span>AI</span></div><div class="snav-links"><a>Dashboard</a><a>Browse Jobs</a></div><div style="display:flex;align-items:center;gap:0.5rem;font-size:0.72rem">KG</div></div>
+        <div style="padding:0.9rem 2.5%">
+          <div class="page-head"><h2>Upload Your Resume</h2><p>AI will analyze and match you with the best jobs</p></div>
+          <div class="usteps">
+            <div class="ustep on"><span>①</span>Upload</div>
+            <div class="ustep"><span>②</span>AI Analysis</div>
+            <div class="ustep"><span>③</span>Results</div>
+          </div>
+          <div class="uzone">
+            <span class="uzone-icon">📄</span>
+            <h3>Drop your resume here</h3>
+            <p>or click to browse from your computer</p>
+            <div class="fchips"><span class="fchip">PDF</span><span class="fchip">DOCX</span><span class="fchip">TXT</span><span class="fchip">Max 5MB</span></div>
+          </div>
+          <div class="tips">
+            <div class="tipc"><h5>💡 Clean format</h5><p>Avoid tables — plain text parses better</p></div>
+            <div class="tipc"><h5>📝 List all skills</h5><p>Include SQL, Python, Excel, Power BI</p></div>
+            <div class="tipc"><h5>🎯 Use keywords</h5><p>Match language to job descriptions</p></div>
+            <div class="tipc"><h5>📊 Add numbers</h5><p>"Improved efficiency by 30%" is stronger</p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- S4: ANALYZING -->
+      <div class="slide" id="s4">
+        <div class="abox">
+          <span class="aemoji">🤖</span>
+          <h2>AI is Reading Your Resume</h2>
+          <p>Our NLP engine is extracting and analyzing your profile...</p>
+          <div class="atasks">
+            <div class="atask"><span class="ati">📄</span><span class="atl">Parsing resume structure</span><span class="atd">Done ✓</span></div>
+            <div class="atask"><span class="ati">🔍</span><span class="atl">Extracting skills & experience</span><span class="atd">Done ✓</span></div>
+            <div class="atask"><span class="ati">📊</span><span class="atl">Scoring resume quality</span><span class="atd">Done ✓</span></div>
+            <div class="atask"><span class="ati">🎯</span><span class="atl">Matching with job database</span><span class="atr">Running...</span></div>
+            <div class="atask"><span class="ati">✨</span><span class="atl">Generating recommendations</span><span class="atw">Waiting...</span></div>
+          </div>
+          <div class="scanbar"><div class="scanfill"></div></div>
+          <p style="font-size:0.68rem;color:#7a96b8;margin-top:0.35rem">75% complete</p>
+        </div>
+      </div>
+
+      <!-- S5: RESULTS -->
+      <div class="slide" id="s5">
+        <div style="padding:0.8rem 2.5%">
+          <div style="margin-bottom:0.6rem"><div style="font-size:0.82rem;font-weight:600;font-family:'Syne',sans-serif">✅ Analysis Complete!</div><div style="font-size:0.68rem;color:#7a96b8">Resume insights and top job matches below</div></div>
+          <div class="rgrid">
+            <div class="rcard" style="text-align:center">
+              <h3 style="justify-content:center;font-size:0.78rem">🏆 Resume Score</h3>
+              <div class="scorecircle"><span class="scorenum">82</span></div>
+              <div style="font-size:0.67rem;color:#7a96b8;margin-bottom:0.45rem">Good — room to improve</div>
+              <div class="sline"><span>Completeness</span><strong>90%</strong></div>
+              <div class="sline"><span>Skill depth</span><strong>78%</strong></div>
+              <div class="sline"><span>Experience</span><strong>85%</strong></div>
+            </div>
+            <div class="rcard">
+              <h3>🛠 Skills Detected</h3>
+              <div class="stags">
+                <span class="st">SQL</span><span class="st">Python</span><span class="st">Excel</span><span class="st">Java</span><span class="st">Data Analysis</span><span class="st w">Power BI ⚠️</span><span class="st w">Tableau ⚠️</span>
+              </div>
+              <div style="font-size:0.65rem;color:#7a96b8;margin-top:0.5rem">⚠️ = Add these to your resume!</div>
+            </div>
+            <div class="rcard">
+              <h3>🎯 Top Job Matches</h3>
+              <div class="jmatch"><span class="jms" style="color:#3b82f6">94%</span><div class="jmi"><strong>Data Analyst – TCS</strong><span>Hyderabad · ₹4–7 LPA</span><div class="mbar"><div class="mfill" style="width:94%"></div></div></div></div>
+              <div class="jmatch"><span class="jms" style="color:#06b6d4">87%</span><div class="jmi"><strong>Business Analyst – Infosys</strong><span>Bengaluru · ₹5–9 LPA</span><div class="mbar"><div class="mfill" style="width:87%"></div></div></div></div>
+              <div class="jmatch"><span class="jms" style="color:#a78bfa">79%</span><div class="jmi"><strong>SQL Developer – Wipro</strong><span>Remote · ₹3–6 LPA</span><div class="mbar"><div class="mfill" style="width:79%"></div></div></div></div>
+            </div>
+            <div class="rcard">
+              <h3>📈 Improve Your Score</h3>
+              <div class="impi">Add a Professional Summary at top of resume</div>
+              <div class="impi">Learn Power BI — 76% of jobs require it</div>
+              <div class="impi">Quantify project results with numbers</div>
+              <div class="impi">Add GitHub or portfolio link</div>
+              <div class="impi">Get Google Data Analytics certificate (free)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- S6: DASHBOARD -->
+      <div class="slide" id="s6">
+        <div class="dsb">
+          <div class="dsb-logo">Resu<span>AI</span></div>
+          <div class="dni on">📊 Dashboard</div>
+          <div class="dni">💼 Browse Jobs</div>
+          <div class="dni">📄 My Resume</div>
+          <div class="dni">📋 Applications</div>
+          <div class="dni">🔖 Saved</div>
+          <div class="dni">⚙️ Settings</div>
+        </div>
+        <div class="dmain">
+          <div class="dtop"><div><h1>Welcome back, Keerthi 👋</h1><p>Your job search overview today</p></div><button class="snav-btn" style="font-size:0.7rem">+ Update Resume</button></div>
+          <div class="dstats">
+            <div class="dstat"><div class="dstat-l">Resume Score</div><div class="dstat-n" style="color:#3b82f6">82</div><div class="dstat-c">↑ +5 today</div></div>
+            <div class="dstat"><div class="dstat-l">Jobs Matched</div><div class="dstat-n">24</div><div class="dstat-c">8 new</div></div>
+            <div class="dstat"><div class="dstat-l">Applications</div><div class="dstat-n">7</div><div class="dstat-c" style="color:#7a96b8">2 in review</div></div>
+            <div class="dstat"><div class="dstat-l">Interviews</div><div class="dstat-n" style="color:#a78bfa">1</div><div class="dstat-c" style="color:#a78bfa">Tomorrow!</div></div>
+          </div>
+          <div style="font-size:0.72rem;font-weight:600;margin-bottom:0.45rem">🎯 Top Matched Jobs</div>
+          <div class="djcard"><div class="dci">🔵</div><div class="dji"><strong>Data Analyst</strong><span>TCS · Hyderabad · ₹4–7 LPA</span></div><span class="dmb">94% match</span></div>
+          <div class="djcard"><div class="dci">🟣</div><div class="dji"><strong>Business Analyst</strong><span>Infosys · Bengaluru · ₹5–9 LPA</span></div><span class="dmb" style="background:rgba(59,130,246,0.1);border-color:rgba(59,130,246,0.18);color:#93c5fd">87% match</span></div>
+          <div class="djcard"><div class="dci">🔷</div><div class="dji"><strong>Data Analyst Intern (Paid)</strong><span>Fintech Startup · Remote · ₹8k–15k/mo</span></div><span class="dmb">91% match</span></div>
+        </div>
+      </div>
+
+      <!-- S7: JOBS -->
+      <div class="slide" id="s7">
+        <div class="jfsb">
+          <h3>Filters</h3>
+          <div style="font-size:0.62rem;color:#333;margin:0.5rem 0 0.3rem">Job Type</div>
+          <div class="fopt"><input type="checkbox" checked/> Full Time</div>
+          <div class="fopt"><input type="checkbox"/> Remote</div>
+          <div class="fopt"><input type="checkbox"/> Internship</div>
+          <div style="font-size:0.62rem;color:#333;margin:0.5rem 0 0.3rem">Location</div>
+          <div class="fopt"><input type="checkbox" checked/> Hyderabad</div>
+          <div class="fopt"><input type="checkbox"/> Bengaluru</div>
+          <div class="fopt"><input type="checkbox"/> Remote</div>
+          <div style="font-size:0.62rem;color:#333;margin:0.5rem 0 0.3rem">Experience</div>
+          <div class="fopt"><input type="checkbox" checked/> Fresher</div>
+          <div class="fopt"><input type="checkbox"/> 1–3 years</div>
+        </div>
+        <div class="jmain">
+          <div class="jsearchbar"><input class="jsearch" placeholder="Search jobs, skills, companies..."/><button class="jsb-btn">🔍</button></div>
+          <div style="font-size:0.68rem;color:#7a96b8;margin-bottom:0.45rem">Showing 8 jobs matched to your profile</div>
+          <div class="jcard"><div class="jci">🔵</div><div class="jii"><strong>Data Analyst</strong><div class="jmeta"><span>🏢 TCS</span><span>📍 Hyderabad</span><span>💰 ₹4–7 LPA</span></div></div><div class="jright"><span class="jbadge" style="background:rgba(34,197,94,0.1);border-color:rgba(34,197,94,0.18);color:#86efac">94% ✓</span><button class="japply">Apply</button></div></div>
+          <div class="jcard"><div class="jci">🟣</div><div class="jii"><strong>Business Analyst</strong><div class="jmeta"><span>🏢 Infosys</span><span>📍 Bengaluru</span><span>💰 ₹5–9 LPA</span></div></div><div class="jright"><span class="jbadge">87%</span><button class="japply">Apply</button></div></div>
+          <div class="jcard"><div class="jci">🟠</div><div class="jii"><strong>Junior Data Analyst</strong><div class="jmeta"><span>🏢 Wipro</span><span>📍 Remote</span><span>💰 ₹3–6 LPA</span></div></div><div class="jright"><span class="jbadge">83%</span><button class="japply">Apply</button></div></div>
+          <div class="jcard"><div class="jci">🔷</div><div class="jii"><strong>Data Analyst Intern (Paid)</strong><div class="jmeta"><span>🏢 Fintech Startup</span><span>📍 Remote</span><span>💰 ₹8k–15k/mo</span></div></div><div class="jright"><span class="jbadge" style="background:rgba(34,197,94,0.1);border-color:rgba(34,197,94,0.18);color:#86efac">91% ⭐</span><button class="japply">Apply</button></div></div>
+        </div>
+      </div>
+
+      <!-- S8: EMPLOYER ADMIN -->
+      <div class="slide" id="s8">
+        <div class="asb">
+          <div class="asb-logo">Resu<span>AI</span></div>
+          <div class="emp-tag">🏢 Employer</div>
+          <div class="ani on">📊 Overview</div>
+          <div class="ani">💼 Job Postings</div>
+          <div class="ani">👥 Candidates</div>
+          <div class="ani">🤖 AI Screening</div>
+          <div class="ani">📅 Interviews</div>
+        </div>
+        <div class="amain">
+          <div class="atopbar"><div><h1>Employer Dashboard</h1><div style="font-size:0.65rem;color:#7a96b8">AI-powered candidate screening</div></div><button class="apostbtn">+ Post Job</button></div>
+          <div class="astats">
+            <div class="astat"><div class="astat-l">Total Applicants</div><div class="astat-n" style="color:#3b82f6">147</div></div>
+            <div class="astat"><div class="astat-l">AI Screened</div><div class="astat-n" style="color:#06b6d4">132</div></div>
+            <div class="astat"><div class="astat-l">Shortlisted</div><div class="astat-n" style="color:#22c55e">18</div></div>
+            <div class="astat"><div class="astat-l">Interviews</div><div class="astat-n" style="color:#a78bfa">6</div></div>
+          </div>
+          <div style="font-size:0.72rem;font-weight:600;margin-bottom:0.45rem">🤖 AI Resume Screening — Data Analyst Role</div>
+          <table class="atable">
+            <thead><tr><th>Rank</th><th>Candidate</th><th>AI Score</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody>
+              <tr>
+                <td style="color:#ffd700;font-size:0.85rem">🥇</td>
+                <td><strong>Keerthi G.</strong><br><span style="font-size:0.62rem;color:#7a96b8">B.Tech CSE · Fresher</span></td>
+                <td><div class="aibar"><div class="aibarinner"><div class="aibarfill" style="width:94%"></div></div><span style="font-size:0.72rem;font-weight:700;color:#22c55e">94%</span></div></td>
+                <td><span class="spill sp-s">Shortlisted</span></td>
+                <td><div style="display:flex;gap:0.3rem"><button class="abtn v">View</button><button class="abtn sh">Interview</button></div></td>
+              </tr>
+              <tr>
+                <td style="color:#c0c0c0;font-size:0.85rem">🥈</td>
+                <td><strong>Rahul A.</strong><br><span style="font-size:0.62rem;color:#7a96b8">B.Tech IT · 1yr</span></td>
+                <td><div class="aibar"><div class="aibarinner"><div class="aibarfill" style="width:88%"></div></div><span style="font-size:0.72rem;font-weight:700;color:#3b82f6">88%</span></div></td>
+                <td><span class="spill sp-v">In Review</span></td>
+                <td><div style="display:flex;gap:0.3rem"><button class="abtn v">View</button><button class="abtn sh">✓</button></div></td>
+              </tr>
+              <tr>
+                <td style="color:#cd7f32;font-size:0.85rem">🥉</td>
+                <td><strong>Priya S.</strong><br><span style="font-size:0.62rem;color:#7a96b8">MBA · Fresher</span></td>
+                <td><div class="aibar"><div class="aibarinner"><div class="aibarfill" style="width:82%"></div></div><span style="font-size:0.72rem;font-weight:700;color:#3b82f6">82%</span></div></td>
+                <td><span class="spill sp-r">New</span></td>
+                <td><div style="display:flex;gap:0.3rem"><button class="abtn v">View</button><button class="abtn sh">✓</button></div></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- screen -->
+
+    <!-- EXPLAIN BAR -->
+    <div class="explainbar">
+      <span class="eicon" id="eicon">🏠</span>
+      <span class="etext" id="etext">This is the <strong>Home Page</strong> — The very first page anyone who visits your website will see. It shows what ResuAI does. Clicking "Upload Resume" button takes the user to sign up.</span>
+    </div>
+  </div>
+</div>
+
+<!-- CONTROLS -->
+<div class="controls">
+  <div class="sinfo" id="sinfo">Page 1 of 9</div>
+  <div class="pbar"><div class="pfill" id="pfill" style="width:11%"></div></div>
+  <button class="nbtn" id="prevBtn" onclick="prev()" disabled>← Back</button>
+  <button class="nbtn prim" id="nextBtn" onclick="next()">Next →</button>
+</div>
+
+<script>
+const data = [
+  {url:'https://resuai.onrender.com', badge:'🏠 Landing Page', icon:'🏠', text:'This is the <strong>Home Page</strong> — The very first page anyone who visits your website will see. It shows what ResuAI does. The "Upload Resume" button takes the user to sign up.'},
+  {url:'https://resuai.onrender.com/signup', badge:'📝 Sign Up Page', icon:'📝', text:'This is the <strong>Sign Up Page</strong> — New users enter their name, email, and password here. When they click "Create Account", their data gets <strong>saved permanently in the database</strong>. They can log in anytime and their data will still be there!'},
+  {url:'https://resuai.onrender.com/login', badge:'🔐 Login Page', icon:'🔐', text:'This is the <strong>Login Page</strong> — Returning users type their email and password. The system <strong>checks the database</strong> and logs them in. Left side shows a trust-building testimonial.'},
+  {url:'https://resuai.onrender.com/upload', badge:'📤 Upload Page', icon:'📤', text:'This is the <strong>Resume Upload Page</strong> — Users drag and drop their PDF resume here. The backend Python code receives the file and sends it to the <strong>AI parser</strong> for reading.'},
+  {url:'https://resuai.onrender.com/upload#analyzing', badge:'🤖 AI Analyzing', icon:'🤖', text:'This is the <strong>AI Analysis Screen</strong> — After uploading, users watch the AI reading the resume <strong>step-by-step</strong>. It extracts skills, gives a score out of 100, and finds matching jobs from the database.'},
+  {url:'https://resuai.onrender.com/upload#results', badge:'📊 AI Results', icon:'📊', text:'This is the <strong>Results Page</strong> — After AI finishes, you see: Resume Score (82/100), all detected skills, <strong>top job matches with % scores</strong>, and tips on how to improve the resume.'},
+  {url:'https://resuai.onrender.com/dashboard', badge:'🖥 User Dashboard', icon:'🖥', text:'This is the <strong>User Dashboard</strong> — After logging in, users land here. They can see their resume score, matched jobs, how many applications they sent, and if any interview is scheduled.'},
+  {url:'https://resuai.onrender.com/jobs', badge:'💼 Browse Jobs', icon:'💼', text:'This is the <strong>Jobs Page</strong> — Users can search and filter jobs. Each job shows a <strong>match percentage</strong> based on their resume. Clicking "Apply" submits the application and saves it to the database.'},
+  {url:'https://resuai.onrender.com/admin', badge:'🏢 Employer Dashboard', icon:'🏢', text:'This is the <strong>Employer Dashboard</strong> — Companies post jobs here. The AI <strong>automatically ranks all applicants</strong> by resume match score from highest to lowest. Employer can shortlist or reject with one click.'}
+];
+
+let cur = 0;
+function go(n) {
+  document.getElementById('s'+cur).classList.remove('active');
+  document.getElementById('li'+cur).classList.remove('active');
+  if(cur < n) document.getElementById('li'+cur).classList.add('done');
+  cur = n;
+  document.getElementById('s'+cur).classList.add('active');
+  document.querySelectorAll('.lni').forEach((el,i)=>{
+    el.classList.remove('active','done');
+    if(i < cur) el.classList.add('done');
+  });
+  document.getElementById('li'+cur).classList.add('active');
+  const d = data[cur];
+  document.getElementById('urlbar').textContent = d.url;
+  document.getElementById('pageBadge').textContent = d.badge;
+  document.getElementById('pageCounter').textContent = (cur+1)+' / '+data.length;
+  document.getElementById('sinfo').textContent = 'Page '+(cur+1)+' of '+data.length;
+  document.getElementById('eicon').textContent = d.icon;
+  document.getElementById('etext').innerHTML = d.text;
+  document.getElementById('pfill').style.width = ((cur+1)/data.length*100)+'%';
+  document.getElementById('prevBtn').disabled = cur === 0;
+  document.getElementById('nextBtn').textContent = cur === data.length-1 ? '✅ Done!' : 'Next →';
+}
+function next(){ if(cur < data.length-1) go(cur+1); }
+function prev(){ if(cur > 0) go(cur-1); }
+document.addEventListener('keydown', e => { if(e.key==='ArrowRight') next(); if(e.key==='ArrowLeft') prev(); });
+</script>
+</body>
+</html>

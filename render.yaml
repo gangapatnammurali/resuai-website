@@ -1,0 +1,29 @@
+# render.yaml — Deploy ResuAI to Render.com (FREE tier)
+# Push this file to GitHub → connect repo on Render → auto deploys!
+
+services:
+  - type: web
+    name: resuai-backend
+    runtime: python
+    region: singapore          # Closest free region to India
+    plan: free                 # Free tier — sleeps after 15 min inactivity
+    buildCommand: |
+      pip install -r requirements.txt
+      python -m spacy download en_core_web_sm
+    startCommand: gunicorn "app:create_app()" --bind 0.0.0.0:$PORT --workers 2
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true     # Render auto-generates a secure key
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: DATABASE_URL
+        fromDatabase:
+          name: resuai-db
+          property: connectionString
+
+databases:
+  - name: resuai-db
+    plan: free                 # Free PostgreSQL on Render (90 days)
+    region: singapore

@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ResuAI – Create Account</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    :root{--bg:#050d1a;--bg2:#0a1628;--bg3:#0f1e35;--accent:#3b82f6;--accent2:#06b6d4;--text:#f0f6ff;--muted:#7a96b8;--border:rgba(59,130,246,0.15);--card-bg:rgba(15,30,53,0.7);--error:#ef4444;--success:#22c55e}
+    body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+    .grid-bg{position:fixed;inset:0;z-index:0;background-image:linear-gradient(rgba(59,130,246,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(59,130,246,0.03) 1px,transparent 1px);background-size:60px 60px;pointer-events:none}
+    .glow{position:fixed;top:-200px;left:50%;transform:translateX(-50%);width:600px;height:400px;background:radial-gradient(ellipse,rgba(59,130,246,0.1),transparent 70%);z-index:0;pointer-events:none}
+    nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:1.1rem 6%;background:rgba(5,13,26,0.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+    .logo{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:var(--text);text-decoration:none}
+    .logo span{color:var(--accent)}
+    .nav-right{display:flex;align-items:center;gap:1rem}
+    .nav-right a{color:var(--muted);text-decoration:none;font-size:0.9rem}
+    .nav-right a:hover{color:var(--text)}
+    .nav-btn{background:transparent;border:1px solid var(--border);color:var(--text);padding:0.5rem 1.2rem;border-radius:8px;font-size:0.88rem;cursor:pointer;text-decoration:none;transition:border-color 0.2s}
+    .nav-btn:hover{border-color:var(--accent)}
+    main{flex:1;display:flex;align-items:center;justify-content:center;padding:7rem 1.5rem 3rem;position:relative;z-index:1}
+    .auth-container{width:100%;max-width:480px}
+    .auth-header{text-align:center;margin-bottom:2rem}
+    .auth-header h1{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;letter-spacing:-0.5px;margin-bottom:0.5rem}
+    .auth-header p{color:var(--muted);font-size:0.92rem}
+    .auth-card{background:var(--card-bg);border:1px solid var(--border);border-radius:20px;padding:2.2rem;backdrop-filter:blur(10px)}
+    .role-tabs{display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;background:var(--bg3);border-radius:10px;padding:4px;margin-bottom:1.8rem}
+    .role-tab{padding:0.6rem;border-radius:7px;border:none;background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:0.88rem;cursor:pointer;transition:all 0.2s;text-align:center}
+    .role-tab.active{background:var(--accent);color:#fff;font-weight:500}
+    .form-group{margin-bottom:1.2rem}
+    label{display:block;font-size:0.83rem;color:var(--muted);margin-bottom:0.4rem;font-weight:500}
+    input[type=text],input[type=email],input[type=password],input[type=tel],select{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:0.75rem 1rem;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.92rem;outline:none;transition:border-color 0.2s}
+    input:focus,select:focus{border-color:var(--accent)}
+    select option{background:var(--bg2)}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+    .password-wrap{position:relative}
+    .password-wrap input{padding-right:2.8rem}
+    .eye-btn{position:absolute;right:0.8rem;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem}
+    .strength-bar{height:3px;background:var(--bg3);border-radius:100px;margin-top:0.4rem;overflow:hidden}
+    .strength-fill{height:100%;border-radius:100px;transition:width 0.4s,background 0.4s;width:0}
+    .strength-text{font-size:0.75rem;color:var(--muted);margin-top:0.3rem}
+    .checkbox-group{display:flex;align-items:flex-start;gap:0.6rem;margin-bottom:1.4rem}
+    .checkbox-group input[type=checkbox]{width:16px;height:16px;margin-top:3px;accent-color:var(--accent);flex-shrink:0}
+    .checkbox-group label{font-size:0.82rem;color:var(--muted);margin:0;cursor:pointer}
+    .checkbox-group a{color:var(--accent);text-decoration:none}
+    .btn-submit{width:100%;background:var(--accent);color:#fff;border:none;border-radius:10px;padding:0.9rem;font-family:'DM Sans',sans-serif;font-size:0.95rem;font-weight:500;cursor:pointer;transition:background 0.2s,transform 0.15s,box-shadow 0.2s}
+    .btn-submit:hover{background:#2563eb;transform:translateY(-1px);box-shadow:0 8px 24px rgba(59,130,246,0.3)}
+    .divider{display:flex;align-items:center;gap:0.8rem;margin:1.4rem 0;color:var(--muted);font-size:0.82rem}
+    .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+    .social-btns{display:grid;grid-template-columns:1fr 1fr;gap:0.7rem}
+    .social-btn{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:0.7rem;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.85rem;cursor:pointer;transition:border-color 0.2s;display:flex;align-items:center;justify-content:center;gap:0.5rem}
+    .social-btn:hover{border-color:var(--accent)}
+    .auth-footer{text-align:center;margin-top:1.5rem;font-size:0.88rem;color:var(--muted)}
+    .auth-footer a{color:var(--accent);text-decoration:none}
+    .error-msg{color:var(--error);font-size:0.78rem;margin-top:0.3rem;display:none}
+    .success-screen{display:none;text-align:center;padding:2rem}
+    .success-icon{font-size:3rem;margin-bottom:1rem;display:block}
+    .success-screen h2{font-family:'Syne',sans-serif;font-size:1.5rem;margin-bottom:0.6rem}
+    .success-screen p{color:var(--muted);font-size:0.9rem;margin-bottom:1.5rem}
+    .progress-steps{display:flex;justify-content:center;gap:0.4rem;margin-bottom:1.5rem}
+    .p-step{height:3px;width:40px;border-radius:100px;background:var(--bg3)}
+    .p-step.active{background:var(--accent)}
+  </style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="glow"></div>
+
+<nav>
+  <a class="logo" href="index.html">Resu<span>AI</span></a>
+  <div class="nav-right">
+    <span style="color:var(--muted);font-size:0.9rem">Already have an account?</span>
+    <a class="nav-btn" href="login.html">Sign In</a>
+  </div>
+</nav>
+
+<main>
+  <div class="auth-container">
+    <div class="auth-header">
+      <h1>Create Your Account</h1>
+      <p>Join thousands finding their dream jobs with AI</p>
+    </div>
+
+    <div class="auth-card" id="formCard">
+      <div class="progress-steps">
+        <div class="p-step active" id="ps1"></div>
+        <div class="p-step" id="ps2"></div>
+        <div class="p-step" id="ps3"></div>
+      </div>
+
+      <div class="role-tabs">
+        <button class="role-tab active" onclick="setRole('jobseeker',this)">👤 Job Seeker</button>
+        <button class="role-tab" onclick="setRole('employer',this)">🏢 Employer</button>
+      </div>
+
+      <form id="signupForm" onsubmit="handleSubmit(event)">
+        <div class="form-row">
+          <div class="form-group">
+            <label>First Name</label>
+            <input type="text" id="fname" placeholder="Keerthi" required/>
+            <div class="error-msg" id="fnameErr">Enter your first name</div>
+          </div>
+          <div class="form-group">
+            <label>Last Name</label>
+            <input type="text" id="lname" placeholder="Gangapatnam" required/>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" id="email" placeholder="you@example.com" required oninput="validateEmail(this)"/>
+          <div class="error-msg" id="emailErr">Enter a valid email address</div>
+        </div>
+
+        <div class="form-group">
+          <label>Phone Number</label>
+          <input type="tel" id="phone" placeholder="+91 98765 43210"/>
+        </div>
+
+        <div class="form-group" id="roleField">
+          <label>Current Role / Domain</label>
+          <select id="domain">
+            <option value="" disabled selected>Select your field</option>
+            <option>Data Analytics</option>
+            <option>Software Development</option>
+            <option>Business Analysis</option>
+            <option>Machine Learning / AI</option>
+            <option>UI/UX Design</option>
+            <option>DevOps / Cloud</option>
+            <option>Fresher / Recent Graduate</option>
+            <option>Other</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Password</label>
+          <div class="password-wrap">
+            <input type="password" id="password" placeholder="Min. 8 characters" oninput="checkStrength(this)"/>
+            <button type="button" class="eye-btn" onclick="togglePass('password',this)">👁</button>
+          </div>
+          <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
+          <div class="strength-text" id="strengthText"></div>
+        </div>
+
+        <div class="form-group">
+          <label>Confirm Password</label>
+          <div class="password-wrap">
+            <input type="password" id="confirmPass" placeholder="Repeat password"/>
+            <button type="button" class="eye-btn" onclick="togglePass('confirmPass',this)">👁</button>
+          </div>
+          <div class="error-msg" id="passErr">Passwords do not match</div>
+        </div>
+
+        <div class="checkbox-group">
+          <input type="checkbox" id="terms" required/>
+          <label for="terms">I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></label>
+        </div>
+
+        <button type="submit" class="btn-submit" id="submitBtn">Create Account →</button>
+      </form>
+
+      <div class="divider">or sign up with</div>
+      <div class="social-btns">
+        <button class="social-btn">🔵 Google</button>
+        <button class="social-btn">🔗 LinkedIn</button>
+      </div>
+    </div>
+
+    <div class="auth-card success-screen" id="successCard">
+      <span class="success-icon">🎉</span>
+      <h2>Account Created!</h2>
+      <p>Welcome to ResuAI. Your account is ready. Let's upload your resume and find your perfect job.</p>
+      <a href="upload.html" class="btn-submit" style="display:block;text-decoration:none;text-align:center;padding:0.9rem;background:var(--accent);border-radius:10px;font-weight:500">Upload My Resume →</a>
+    </div>
+
+    <p class="auth-footer">Already have an account? <a href="login.html">Sign In</a></p>
+  </div>
+</main>
+
+<script>
+  let currentRole = 'jobseeker';
+  function setRole(role, btn) {
+    currentRole = role;
+    document.querySelectorAll('.role-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+  }
+  function togglePass(id, btn) {
+    const el = document.getElementById(id);
+    el.type = el.type === 'password' ? 'text' : 'password';
+    btn.textContent = el.type === 'password' ? '👁' : '🙈';
+  }
+  function validateEmail(el) {
+    const err = document.getElementById('emailErr');
+    const ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(el.value);
+    err.style.display = !ok && el.value ? 'block' : 'none';
+    el.style.borderColor = !ok && el.value ? 'var(--error)' : '';
+  }
+  function checkStrength(el) {
+    const v = el.value;
+    const fill = document.getElementById('strengthFill');
+    const text = document.getElementById('strengthText');
+    let score = 0;
+    if (v.length >= 8) score++;
+    if (/[A-Z]/.test(v)) score++;
+    if (/[0-9]/.test(v)) score++;
+    if (/[^A-Za-z0-9]/.test(v)) score++;
+    const levels = [
+      { w: '0%', c: '', l: '' },
+      { w: '25%', c: '#ef4444', l: 'Weak' },
+      { w: '50%', c: '#f97316', l: 'Fair' },
+      { w: '75%', c: '#eab308', l: 'Good' },
+      { w: '100%', c: '#22c55e', l: 'Strong' }
+    ];
+    fill.style.width = levels[score].w;
+    fill.style.background = levels[score].c;
+    text.textContent = score > 0 ? levels[score].l + ' password' : '';
+    text.style.color = levels[score].c;
+  }
+  function handleSubmit(e) {
+    e.preventDefault();
+    const p1 = document.getElementById('password').value;
+    const p2 = document.getElementById('confirmPass').value;
+    const err = document.getElementById('passErr');
+    if (p1 !== p2) { err.style.display = 'block'; return; }
+    err.style.display = 'none';
+    const btn = document.getElementById('submitBtn');
+    btn.textContent = 'Creating account...';
+    btn.disabled = true;
+    setTimeout(() => {
+      document.getElementById('formCard').style.display = 'none';
+      document.getElementById('successCard').style.display = 'block';
+    }, 1500);
+  }
+</script>
+</body>
+</html>

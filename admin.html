@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ResuAI – Employer Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    :root{--bg:#050d1a;--bg2:#0a1628;--bg3:#0f1e35;--accent:#3b82f6;--accent2:#06b6d4;--text:#f0f6ff;--muted:#7a96b8;--border:rgba(59,130,246,0.15);--card-bg:rgba(15,30,53,0.7);--sidebar-w:240px}
+    body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex}
+    .grid-bg{position:fixed;inset:0;z-index:0;background-image:linear-gradient(rgba(59,130,246,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(59,130,246,0.02) 1px,transparent 1px);background-size:60px 60px;pointer-events:none}
+    aside{width:var(--sidebar-w);background:var(--bg2);border-right:1px solid var(--border);position:fixed;top:0;left:0;bottom:0;z-index:50;display:flex;flex-direction:column;padding:1.5rem 0}
+    .sidebar-logo{padding:0 1.5rem 1.5rem;border-bottom:1px solid var(--border);margin-bottom:1rem}
+    .sidebar-logo a{font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;color:var(--text);text-decoration:none}
+    .sidebar-logo a span{color:var(--accent)}
+    .employer-tag{display:inline-block;background:rgba(168,85,247,0.15);border:1px solid rgba(168,85,247,0.2);border-radius:6px;padding:0.2rem 0.6rem;font-size:0.7rem;color:#d8b4fe;margin-top:0.4rem}
+    .nav-section{font-size:0.7rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);padding:0.8rem 1.5rem 0.4rem}
+    .nav-item{display:flex;align-items:center;gap:0.7rem;padding:0.65rem 1.5rem;color:var(--muted);text-decoration:none;font-size:0.88rem;transition:all 0.2s;border-left:2px solid transparent;cursor:pointer}
+    .nav-item:hover{background:rgba(59,130,246,0.05);color:var(--text);border-left-color:rgba(59,130,246,0.3)}
+    .nav-item.active{background:rgba(59,130,246,0.08);color:var(--accent);border-left-color:var(--accent);font-weight:500}
+    .sidebar-user{padding:1.2rem 1.5rem;border-top:1px solid var(--border);margin-top:auto;display:flex;align-items:center;gap:0.7rem}
+    .user-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#8b5cf6,#a78bfa);display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;flex-shrink:0}
+    .main-content{margin-left:var(--sidebar-w);flex:1;padding:2rem 2.5rem;position:relative;z-index:1}
+    .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;flex-wrap:wrap;gap:1rem}
+    .topbar h1{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;letter-spacing:-0.3px}
+    .topbar p{color:var(--muted);font-size:0.88rem}
+    .post-btn{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:0.6rem 1.3rem;font-size:0.88rem;font-weight:500;cursor:pointer}
+    .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem}
+    .stat-card{background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:1.3rem 1.5rem}
+    .stat-label{font-size:0.78rem;color:var(--muted);margin-bottom:0.5rem}
+    .stat-num{font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;margin-bottom:0.2rem}
+    .stat-change{font-size:0.75rem;color:var(--muted)}
+    .two-col{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:2rem}
+    .card{background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:1.5rem}
+    .card-title{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;margin-bottom:1.2rem;display:flex;align-items:center;justify-content:space-between}
+    .card-title a{font-family:'DM Sans',sans-serif;font-size:0.78rem;font-weight:400;color:var(--accent);text-decoration:none}
+    /* Job Postings */
+    .job-posting{display:flex;align-items:center;gap:1rem;padding:0.8rem 0;border-bottom:1px solid rgba(59,130,246,0.07)}
+    .job-posting:last-child{border:none}
+    .post-info{flex:1}
+    .post-info strong{display:block;font-size:0.9rem;font-weight:600}
+    .post-info span{font-size:0.78rem;color:var(--muted)}
+    .post-badge{font-size:0.72rem;padding:0.2rem 0.6rem;border-radius:100px}
+    .pb-active{background:rgba(34,197,94,0.1);color:#86efac}
+    .pb-draft{background:rgba(234,179,8,0.1);color:#fde047}
+    .applicant-count{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700;color:var(--accent);text-align:center;min-width:30px}
+    .applicant-label{font-size:0.68rem;color:var(--muted);text-align:center}
+    /* Candidates */
+    .candidate-row{display:flex;align-items:center;gap:0.8rem;padding:0.9rem 0;border-bottom:1px solid rgba(59,130,246,0.07)}
+    .candidate-row:last-child{border:none}
+    .cand-avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;flex-shrink:0}
+    .cand-info{flex:1}
+    .cand-info strong{display:block;font-size:0.88rem;font-weight:600}
+    .cand-info span{font-size:0.76rem;color:var(--muted)}
+    .ai-score{font-family:'Syne',sans-serif;font-size:1rem;font-weight:800}
+    .score-high{color:#22c55e}
+    .score-mid{color:var(--accent)}
+    .score-low{color:var(--muted)}
+    .action-btns{display:flex;gap:0.4rem}
+    .act-btn{border:1px solid var(--border);background:none;border-radius:6px;padding:0.25rem 0.6rem;font-size:0.72rem;cursor:pointer;transition:all 0.2s}
+    .act-btn.shortlist{color:#22c55e;border-color:rgba(34,197,94,0.2)}
+    .act-btn.shortlist:hover{background:rgba(34,197,94,0.1)}
+    .act-btn.reject{color:#ef4444;border-color:rgba(239,68,68,0.2)}
+    .act-btn.reject:hover{background:rgba(239,68,68,0.1)}
+    .act-btn.view{color:var(--accent);border-color:rgba(59,130,246,0.2)}
+    .act-btn.view:hover{background:rgba(59,130,246,0.1)}
+    /* AI SCREENING */
+    .screen-section{margin-bottom:2rem}
+    .screen-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+    .screen-header h2{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700}
+    .screen-controls{display:flex;gap:0.5rem}
+    .ctrl-select{background:var(--card-bg);border:1px solid var(--border);border-radius:8px;padding:0.4rem 0.8rem;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.82rem;outline:none}
+    .screen-table{width:100%;border-collapse:collapse;background:var(--card-bg);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+    .screen-table th{font-size:0.72rem;letter-spacing:1px;text-transform:uppercase;color:var(--muted);padding:0.8rem 1rem;border-bottom:1px solid var(--border);text-align:left;font-weight:500}
+    .screen-table td{padding:0.9rem 1rem;font-size:0.86rem;border-bottom:1px solid rgba(59,130,246,0.07)}
+    .screen-table tr:last-child td{border:none}
+    .screen-table tr:hover td{background:rgba(59,130,246,0.03)}
+    .rank-num{font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;color:var(--accent)}
+    .rank-1{color:#ffd700}
+    .rank-2{color:#c0c0c0}
+    .rank-3{color:#cd7f32}
+    .match-bar-wrap{display:flex;align-items:center;gap:0.5rem}
+    .match-bar{flex:1;height:5px;background:var(--bg3);border-radius:100px;overflow:hidden;min-width:60px}
+    .match-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:100px}
+    .skills-list{display:flex;gap:0.3rem;flex-wrap:wrap}
+    .sk{background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:0.1rem 0.4rem;font-size:0.7rem;color:var(--muted)}
+    .status-pill{padding:0.2rem 0.65rem;border-radius:100px;font-size:0.73rem;font-weight:500}
+    .sp-new{background:rgba(59,130,246,0.1);color:#93c5fd}
+    .sp-short{background:rgba(34,197,94,0.1);color:#86efac}
+    .sp-reject{background:rgba(239,68,68,0.1);color:#fca5a5}
+    .sp-review{background:rgba(234,179,8,0.1);color:#fde047}
+    @media(max-width:900px){aside{display:none}.main-content{margin-left:0}.stats-row{grid-template-columns:1fr 1fr}.two-col{grid-template-columns:1fr}.screen-table{font-size:0.78rem}}
+  </style>
+</head>
+<body>
+<div class="grid-bg"></div>
+
+<aside>
+  <div class="sidebar-logo">
+    <a href="index.html">Resu<span>AI</span></a>
+    <div class="employer-tag">🏢 Employer</div>
+  </div>
+
+  <div class="nav-section">Hiring</div>
+  <a class="nav-item active" href="admin.html">📊 Overview</a>
+  <a class="nav-item" href="#">💼 Job Postings</a>
+  <a class="nav-item" href="#">👥 Candidates</a>
+  <a class="nav-item" href="#">🤖 AI Screening</a>
+
+  <div class="nav-section">Tools</div>
+  <a class="nav-item" href="#">📧 Messages</a>
+  <a class="nav-item" href="#">📅 Interviews</a>
+  <a class="nav-item" href="#">📈 Analytics</a>
+
+  <div class="nav-section">Account</div>
+  <a class="nav-item" href="#">⚙️ Company Profile</a>
+  <a class="nav-item" href="login.html">🚪 Sign Out</a>
+
+  <div class="sidebar-user">
+    <div class="user-avatar">HR</div>
+    <div>
+      <div style="font-size:0.85rem;font-weight:500">HR Admin</div>
+      <div style="font-size:0.75rem;color:var(--muted)">TechCorp Hyderabad</div>
+    </div>
+  </div>
+</aside>
+
+<div class="main-content">
+  <div class="topbar">
+    <div>
+      <h1>Employer Dashboard</h1>
+      <p>AI-powered candidate screening & hiring pipeline</p>
+    </div>
+    <button class="post-btn" onclick="alert('Post Job feature — connect to backend!')">+ Post New Job</button>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">Total Applicants</div>
+      <div class="stat-num" style="color:var(--accent)">147</div>
+      <div class="stat-change">↑ 23 this week</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">AI Screened</div>
+      <div class="stat-num" style="color:var(--accent2)">132</div>
+      <div class="stat-change">89% auto-processed</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Shortlisted</div>
+      <div class="stat-num" style="color:#22c55e">18</div>
+      <div class="stat-change">12% shortlist rate</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Interviews Set</div>
+      <div class="stat-num" style="color:#a78bfa">6</div>
+      <div class="stat-change">3 this week</div>
+    </div>
+  </div>
+
+  <!-- JOB POSTINGS + TOP CANDIDATES -->
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">💼 Active Job Postings <a href="#">View all →</a></div>
+
+      <div class="job-posting">
+        <div style="flex:1">
+          <div class="post-info"><strong>Data Analyst</strong><span>Hyderabad · Full Time</span></div>
+        </div>
+        <div style="text-align:center;min-width:40px">
+          <div class="applicant-count">42</div>
+          <div class="applicant-label">applicants</div>
+        </div>
+        <span class="post-badge pb-active">Active</span>
+      </div>
+
+      <div class="job-posting">
+        <div style="flex:1">
+          <div class="post-info"><strong>Junior Developer</strong><span>Remote · Contract</span></div>
+        </div>
+        <div style="text-align:center;min-width:40px">
+          <div class="applicant-count">28</div>
+          <div class="applicant-label">applicants</div>
+        </div>
+        <span class="post-badge pb-active">Active</span>
+      </div>
+
+      <div class="job-posting">
+        <div style="flex:1">
+          <div class="post-info"><strong>BI Analyst</strong><span>Hyderabad · Full Time</span></div>
+        </div>
+        <div style="text-align:center;min-width:40px">
+          <div class="applicant-count">35</div>
+          <div class="applicant-label">applicants</div>
+        </div>
+        <span class="post-badge pb-active">Active</span>
+      </div>
+
+      <div class="job-posting">
+        <div style="flex:1">
+          <div class="post-info"><strong>Python Engineer</strong><span>Bengaluru · Full Time</span></div>
+        </div>
+        <div style="text-align:center;min-width:40px">
+          <div class="applicant-count">0</div>
+          <div class="applicant-label">applicants</div>
+        </div>
+        <span class="post-badge pb-draft">Draft</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🏆 Top AI-Ranked Candidates <a href="#">View all →</a></div>
+
+      <div class="candidate-row">
+        <div class="cand-avatar">KG</div>
+        <div class="cand-info"><strong>Keerthi G.</strong><span>Data Analyst · Hyderabad</span></div>
+        <div><span class="ai-score score-high">94%</span><div style="font-size:0.68rem;color:var(--muted)">AI Score</div></div>
+        <div class="action-btns">
+          <button class="act-btn view">View</button>
+          <button class="act-btn shortlist">✓</button>
+        </div>
+      </div>
+
+      <div class="candidate-row">
+        <div class="cand-avatar" style="background:linear-gradient(135deg,#8b5cf6,#a78bfa)">RA</div>
+        <div class="cand-info"><strong>Rahul A.</strong><span>SQL Developer · Chennai</span></div>
+        <div><span class="ai-score score-mid">88%</span><div style="font-size:0.68rem;color:var(--muted)">AI Score</div></div>
+        <div class="action-btns">
+          <button class="act-btn view">View</button>
+          <button class="act-btn shortlist">✓</button>
+        </div>
+      </div>
+
+      <div class="candidate-row">
+        <div class="cand-avatar" style="background:linear-gradient(135deg,#f97316,#fb923c)">PS</div>
+        <div class="cand-info"><strong>Priya S.</strong><span>Business Analyst · Bengaluru</span></div>
+        <div><span class="ai-score score-mid">82%</span><div style="font-size:0.68rem;color:var(--muted)">AI Score</div></div>
+        <div class="action-btns">
+          <button class="act-btn view">View</button>
+          <button class="act-btn shortlist">✓</button>
+        </div>
+      </div>
+
+      <div class="candidate-row">
+        <div class="cand-avatar" style="background:linear-gradient(135deg,#22c55e,#4ade80)">AM</div>
+        <div class="cand-info"><strong>Anjali M.</strong><span>Data Analyst · Hyderabad</span></div>
+        <div><span class="ai-score score-mid">79%</span><div style="font-size:0.68rem;color:var(--muted)">AI Score</div></div>
+        <div class="action-btns">
+          <button class="act-btn view">View</button>
+          <button class="act-btn reject">✕</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI SCREENING TABLE -->
+  <div class="screen-section">
+    <div class="screen-header">
+      <h2>🤖 AI Resume Screening — Data Analyst Role</h2>
+      <div class="screen-controls">
+        <select class="ctrl-select"><option>Data Analyst</option><option>BI Analyst</option><option>SQL Developer</option></select>
+        <select class="ctrl-select"><option>All Status</option><option>New</option><option>Shortlisted</option><option>Rejected</option></select>
+      </div>
+    </div>
+
+    <table class="screen-table">
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Candidate</th>
+          <th>AI Match Score</th>
+          <th>Key Skills</th>
+          <th>Experience</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="rank-num rank-1">🥇</span></td>
+          <td><strong>Keerthi G.</strong><br><span style="font-size:0.75rem;color:var(--muted)">B.Tech CSE · Fresher</span></td>
+          <td>
+            <div class="match-bar-wrap">
+              <div class="match-bar"><div class="match-bar-fill" style="width:94%"></div></div>
+              <span style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.9rem;color:#22c55e">94%</span>
+            </div>
+          </td>
+          <td><div class="skills-list"><span class="sk">SQL</span><span class="sk">Python</span><span class="sk">Excel</span></div></td>
+          <td style="color:var(--muted);font-size:0.83rem">0 yrs (project exp.)</td>
+          <td><span class="status-pill sp-short">Shortlisted</span></td>
+          <td><div class="action-btns"><button class="act-btn view">View CV</button><button class="act-btn shortlist">Interview</button></div></td>
+        </tr>
+        <tr>
+          <td><span class="rank-num rank-2">🥈</span></td>
+          <td><strong>Rahul A.</strong><br><span style="font-size:0.75rem;color:var(--muted)">B.Tech IT · 1 yr exp</span></td>
+          <td>
+            <div class="match-bar-wrap">
+              <div class="match-bar"><div class="match-bar-fill" style="width:88%"></div></div>
+              <span style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.9rem;color:var(--accent)">88%</span>
+            </div>
+          </td>
+          <td><div class="skills-list"><span class="sk">SQL</span><span class="sk">Power BI</span><span class="sk">MySQL</span></div></td>
+          <td style="color:var(--muted);font-size:0.83rem">1 year</td>
+          <td><span class="status-pill sp-review">In Review</span></td>
+          <td><div class="action-btns"><button class="act-btn view">View CV</button><button class="act-btn shortlist">✓</button></div></td>
+        </tr>
+        <tr>
+          <td><span class="rank-num rank-3">🥉</span></td>
+          <td><strong>Priya S.</strong><br><span style="font-size:0.75rem;color:var(--muted)">MBA Analytics · Fresher</span></td>
+          <td>
+            <div class="match-bar-wrap">
+              <div class="match-bar"><div class="match-bar-fill" style="width:82%"></div></div>
+              <span style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.9rem;color:var(--accent)">82%</span>
+            </div>
+          </td>
+          <td><div class="skills-list"><span class="sk">Excel</span><span class="sk">Tableau</span><span class="sk">Python</span></div></td>
+          <td style="color:var(--muted);font-size:0.83rem">0 yrs (intern)</td>
+          <td><span class="status-pill sp-new">New</span></td>
+          <td><div class="action-btns"><button class="act-btn view">View CV</button><button class="act-btn shortlist">✓</button></div></td>
+        </tr>
+        <tr>
+          <td><span class="rank-num" style="color:var(--muted)">4</span></td>
+          <td><strong>Anjali M.</strong><br><span style="font-size:0.75rem;color:var(--muted)">BCA · Fresher</span></td>
+          <td>
+            <div class="match-bar-wrap">
+              <div class="match-bar"><div class="match-bar-fill" style="width:74%"></div></div>
+              <span style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.9rem;color:var(--muted)">74%</span>
+            </div>
+          </td>
+          <td><div class="skills-list"><span class="sk">SQL</span><span class="sk">Excel</span></div></td>
+          <td style="color:var(--muted);font-size:0.83rem">0 yrs</td>
+          <td><span class="status-pill sp-review">In Review</span></td>
+          <td><div class="action-btns"><button class="act-btn view">View CV</button><button class="act-btn reject">✕</button></div></td>
+        </tr>
+        <tr>
+          <td><span class="rank-num" style="color:var(--muted)">5</span></td>
+          <td><strong>Vikram R.</strong><br><span style="font-size:0.75rem;color:var(--muted)">B.Sc Maths · 2 yrs</span></td>
+          <td>
+            <div class="match-bar-wrap">
+              <div class="match-bar"><div class="match-bar-fill" style="width:61%"></div></div>
+              <span style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.9rem;color:var(--muted)">61%</span>
+            </div>
+          </td>
+          <td><div class="skills-list"><span class="sk">Excel</span><span class="sk">R</span></div></td>
+          <td style="color:var(--muted);font-size:0.83rem">2 years</td>
+          <td><span class="status-pill sp-reject">Rejected</span></td>
+          <td><div class="action-btns"><button class="act-btn view">View CV</button></div></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll('.act-btn.shortlist').forEach(btn => {
+    btn.addEventListener('click', () => {
+      btn.textContent = '✓ Shortlisted';
+      btn.style.background = 'rgba(34,197,94,0.1)';
+    });
+  });
+  document.querySelectorAll('.act-btn.reject').forEach(btn => {
+    btn.addEventListener('click', () => {
+      btn.textContent = '✕ Rejected';
+      btn.style.background = 'rgba(239,68,68,0.1)';
+    });
+  });
+</script>
+</body>
+</html>

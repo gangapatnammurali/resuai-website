@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ResuAI – Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    :root{--bg:#050d1a;--bg2:#0a1628;--bg3:#0f1e35;--accent:#3b82f6;--accent2:#06b6d4;--text:#f0f6ff;--muted:#7a96b8;--border:rgba(59,130,246,0.15);--card-bg:rgba(15,30,53,0.7);--sidebar-w:240px}
+    body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex}
+    .grid-bg{position:fixed;inset:0;z-index:0;background-image:linear-gradient(rgba(59,130,246,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(59,130,246,0.02) 1px,transparent 1px);background-size:60px 60px;pointer-events:none}
+    /* SIDEBAR */
+    aside{width:var(--sidebar-w);background:var(--bg2);border-right:1px solid var(--border);position:fixed;top:0;left:0;bottom:0;z-index:50;display:flex;flex-direction:column;padding:1.5rem 0}
+    .sidebar-logo{padding:0 1.5rem 1.5rem;border-bottom:1px solid var(--border);margin-bottom:1.5rem}
+    .sidebar-logo a{font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;color:var(--text);text-decoration:none}
+    .sidebar-logo a span{color:var(--accent)}
+    .sidebar-nav{flex:1}
+    .nav-section{font-size:0.7rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);padding:0 1.5rem;margin-bottom:0.5rem;margin-top:1.2rem}
+    .nav-item{display:flex;align-items:center;gap:0.7rem;padding:0.65rem 1.5rem;color:var(--muted);text-decoration:none;font-size:0.88rem;transition:all 0.2s;border-left:2px solid transparent;cursor:pointer}
+    .nav-item:hover{background:rgba(59,130,246,0.05);color:var(--text);border-left-color:rgba(59,130,246,0.3)}
+    .nav-item.active{background:rgba(59,130,246,0.08);color:var(--accent);border-left-color:var(--accent);font-weight:500}
+    .nav-item .ni{font-size:1rem;min-width:18px}
+    .sidebar-user{padding:1.2rem 1.5rem;border-top:1px solid var(--border);display:flex;align-items:center;gap:0.7rem}
+    .user-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;flex-shrink:0}
+    .user-name{font-size:0.85rem;font-weight:500}
+    .user-role{font-size:0.75rem;color:var(--muted)}
+    /* MAIN */
+    .main-content{margin-left:var(--sidebar-w);flex:1;padding:2rem 2.5rem;position:relative;z-index:1;min-height:100vh}
+    .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem}
+    .topbar h1{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;letter-spacing:-0.3px}
+    .topbar p{color:var(--muted);font-size:0.88rem;margin-top:0.1rem}
+    .topbar-right{display:flex;align-items:center;gap:0.8rem}
+    .notif-btn{background:var(--card-bg);border:1px solid var(--border);border-radius:8px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1rem;position:relative}
+    .notif-dot{position:absolute;top:6px;right:6px;width:8px;height:8px;background:#ef4444;border-radius:50%}
+    .upload-btn-sm{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:0.5rem 1.1rem;font-size:0.85rem;font-weight:500;cursor:pointer;text-decoration:none}
+    /* STATS */
+    .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem}
+    .stat-card{background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:1.3rem 1.5rem}
+    .stat-card-label{font-size:0.78rem;color:var(--muted);margin-bottom:0.5rem}
+    .stat-card-num{font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;margin-bottom:0.2rem}
+    .stat-card-change{font-size:0.75rem;display:flex;align-items:center;gap:0.3rem}
+    .change-up{color:#22c55e}
+    .change-down{color:#ef4444}
+    /* TABS */
+    .tab-row{display:flex;gap:0.3rem;border-bottom:1px solid var(--border);margin-bottom:1.8rem}
+    .tab-btn{padding:0.6rem 1.2rem;background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:0.88rem;cursor:pointer;transition:all 0.2s;margin-bottom:-1px}
+    .tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:500}
+    .tab-btn:hover{color:var(--text)}
+    .tab-content{display:none}
+    .tab-content.active{display:block}
+    /* JOBS */
+    .jobs-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+    .filter-row{display:flex;gap:0.5rem;flex-wrap:wrap}
+    .filter-chip{background:var(--bg3);border:1px solid var(--border);border-radius:100px;padding:0.3rem 0.85rem;font-size:0.78rem;color:var(--muted);cursor:pointer;transition:all 0.2s}
+    .filter-chip:hover,.filter-chip.active{background:rgba(59,130,246,0.1);border-color:var(--accent);color:var(--accent)}
+    .job-card{background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:1.3rem 1.5rem;margin-bottom:0.8rem;display:flex;align-items:flex-start;gap:1rem;transition:border-color 0.2s,transform 0.2s;cursor:pointer}
+    .job-card:hover{border-color:rgba(59,130,246,0.35);transform:translateX(3px)}
+    .company-logo{width:44px;height:44px;border-radius:10px;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0}
+    .job-info{flex:1}
+    .job-info h3{font-size:0.95rem;font-weight:600;margin-bottom:0.25rem}
+    .job-meta{display:flex;gap:0.8rem;flex-wrap:wrap}
+    .job-meta span{font-size:0.78rem;color:var(--muted);display:flex;align-items:center;gap:0.25rem}
+    .job-right{display:flex;flex-direction:column;align-items:flex-end;gap:0.6rem}
+    .match-badge{background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.2);border-radius:100px;padding:0.25rem 0.7rem;font-size:0.78rem;font-weight:600;color:#93c5fd}
+    .match-badge.high{background:rgba(34,197,94,0.1);border-color:rgba(34,197,94,0.2);color:#86efac}
+    .save-btn{background:none;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:0.75rem;padding:0.25rem 0.6rem;cursor:pointer;transition:all 0.2s}
+    .save-btn:hover{border-color:var(--accent);color:var(--accent)}
+    /* APPLICATIONS */
+    .app-table{width:100%;border-collapse:collapse}
+    .app-table th{font-size:0.75rem;color:var(--muted);font-weight:500;text-align:left;padding:0.6rem 1rem;border-bottom:1px solid var(--border);letter-spacing:0.5px}
+    .app-table td{padding:0.9rem 1rem;font-size:0.88rem;border-bottom:1px solid rgba(59,130,246,0.07)}
+    .app-table tr:last-child td{border:none}
+    .app-table tr:hover td{background:rgba(59,130,246,0.03)}
+    .status-badge{padding:0.25rem 0.7rem;border-radius:100px;font-size:0.75rem;font-weight:500}
+    .s-applied{background:rgba(59,130,246,0.1);color:#93c5fd}
+    .s-screening{background:rgba(234,179,8,0.1);color:#fde047}
+    .s-interview{background:rgba(168,85,247,0.1);color:#d8b4fe}
+    .s-rejected{background:rgba(239,68,68,0.1);color:#fca5a5}
+    .s-offered{background:rgba(34,197,94,0.1);color:#86efac}
+    /* RESUME CARD */
+    .resume-section{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
+    .resume-card{background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:1.5rem}
+    .resume-card h3{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;margin-bottom:1.2rem;display:flex;align-items:center;gap:0.5rem}
+    .skill-bar-item{margin-bottom:0.9rem}
+    .skill-bar-header{display:flex;justify-content:space-between;font-size:0.83rem;margin-bottom:0.3rem}
+    .skill-bar-header span{color:var(--muted)}
+    .skill-bar-header strong{color:var(--text)}
+    .sbar{height:5px;background:var(--bg3);border-radius:100px;overflow:hidden}
+    .sbar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:100px}
+    @media(max-width:900px){aside{display:none}.main-content{margin-left:0}.stats-row{grid-template-columns:1fr 1fr}.resume-section{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<div class="grid-bg"></div>
+
+<!-- SIDEBAR -->
+<aside>
+  <div class="sidebar-logo">
+    <a href="index.html">Resu<span>AI</span></a>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section">Main</div>
+    <a class="nav-item active" href="dashboard.html"><span class="ni">📊</span> Dashboard</a>
+    <a class="nav-item" href="jobs.html"><span class="ni">💼</span> Browse Jobs</a>
+    <a class="nav-item" href="upload.html"><span class="ni">📄</span> My Resume</a>
+
+    <div class="nav-section">Activity</div>
+    <a class="nav-item" onclick="switchTab('applications')"><span class="ni">📋</span> Applications</a>
+    <a class="nav-item" onclick="switchTab('saved')"><span class="ni">🔖</span> Saved Jobs</a>
+
+    <div class="nav-section">Account</div>
+    <a class="nav-item" href="#"><span class="ni">⚙️</span> Settings</a>
+    <a class="nav-item" href="login.html"><span class="ni">🚪</span> Sign Out</a>
+  </nav>
+
+  <div class="sidebar-user">
+    <div class="user-avatar">KG</div>
+    <div>
+      <div class="user-name">Keerthi G.</div>
+      <div class="user-role">Job Seeker</div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main-content">
+  <div class="topbar">
+    <div>
+      <h1>Welcome back, Keerthi 👋</h1>
+      <p>Here's your job search overview for today</p>
+    </div>
+    <div class="topbar-right">
+      <div class="notif-btn">🔔<div class="notif-dot"></div></div>
+      <a href="upload.html" class="upload-btn-sm">+ Update Resume</a>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-card-label">Resume Score</div>
+      <div class="stat-card-num" style="color:var(--accent)">82<span style="font-size:1rem;color:var(--muted)">/100</span></div>
+      <div class="stat-card-change change-up">↑ +5 from last upload</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-label">Jobs Matched</div>
+      <div class="stat-card-num">24</div>
+      <div class="stat-card-change change-up">↑ 8 new today</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-label">Applications Sent</div>
+      <div class="stat-card-num">7</div>
+      <div class="stat-card-change" style="color:var(--muted)">2 in review</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-label">Interviews Scheduled</div>
+      <div class="stat-card-num" style="color:#a78bfa">1</div>
+      <div class="stat-card-change" style="color:#a78bfa">Tomorrow, 11 AM</div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tab-row">
+    <button class="tab-btn active" onclick="switchTab('matches')">🎯 Top Matches</button>
+    <button class="tab-btn" onclick="switchTab('applications')">📋 Applications</button>
+    <button class="tab-btn" onclick="switchTab('resume')">📄 Resume Insights</button>
+    <button class="tab-btn" onclick="switchTab('saved')">🔖 Saved</button>
+  </div>
+
+  <!-- TAB: MATCHES -->
+  <div class="tab-content active" id="tab-matches">
+    <div class="jobs-header">
+      <div class="filter-row">
+        <span class="filter-chip active">All</span>
+        <span class="filter-chip">Data Analyst</span>
+        <span class="filter-chip">Remote</span>
+        <span class="filter-chip">Hyderabad</span>
+        <span class="filter-chip">Fresher</span>
+      </div>
+    </div>
+
+    <div class="job-card">
+      <div class="company-logo">🔵</div>
+      <div class="job-info">
+        <h3>Data Analyst</h3>
+        <div class="job-meta">
+          <span>🏢 TCS</span>
+          <span>📍 Hyderabad</span>
+          <span>💰 ₹4–7 LPA</span>
+          <span>⏰ Full Time</span>
+        </div>
+      </div>
+      <div class="job-right">
+        <span class="match-badge high">94% match</span>
+        <button class="save-btn">🔖 Save</button>
+      </div>
+    </div>
+
+    <div class="job-card">
+      <div class="company-logo">🟣</div>
+      <div class="job-info">
+        <h3>Business Analyst</h3>
+        <div class="job-meta">
+          <span>🏢 Infosys</span>
+          <span>📍 Bengaluru</span>
+          <span>💰 ₹5–9 LPA</span>
+          <span>⏰ Full Time</span>
+        </div>
+      </div>
+      <div class="job-right">
+        <span class="match-badge">87% match</span>
+        <button class="save-btn">🔖 Save</button>
+      </div>
+    </div>
+
+    <div class="job-card">
+      <div class="company-logo">🟠</div>
+      <div class="job-info">
+        <h3>Junior Data Analyst</h3>
+        <div class="job-meta">
+          <span>🏢 Wipro</span>
+          <span>📍 Remote</span>
+          <span>💰 ₹3–6 LPA</span>
+          <span>⏰ Contract</span>
+        </div>
+      </div>
+      <div class="job-right">
+        <span class="match-badge">83% match</span>
+        <button class="save-btn">🔖 Save</button>
+      </div>
+    </div>
+
+    <div class="job-card">
+      <div class="company-logo">🟢</div>
+      <div class="job-info">
+        <h3>Analyst Trainee</h3>
+        <div class="job-meta">
+          <span>🏢 Accenture</span>
+          <span>📍 Hyderabad</span>
+          <span>💰 ₹3.5–5 LPA</span>
+          <span>⏰ Full Time</span>
+        </div>
+      </div>
+      <div class="job-right">
+        <span class="match-badge">79% match</span>
+        <button class="save-btn">🔖 Save</button>
+      </div>
+    </div>
+
+    <div class="job-card">
+      <div class="company-logo">🔴</div>
+      <div class="job-info">
+        <h3>SQL / Python Analyst</h3>
+        <div class="job-meta">
+          <span>🏢 HCL</span>
+          <span>📍 Chennai</span>
+          <span>💰 ₹4–8 LPA</span>
+          <span>⏰ Full Time</span>
+        </div>
+      </div>
+      <div class="job-right">
+        <span class="match-badge">75% match</span>
+        <button class="save-btn">🔖 Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: APPLICATIONS -->
+  <div class="tab-content" id="tab-applications">
+    <table class="app-table">
+      <thead>
+        <tr>
+          <th>JOB TITLE</th>
+          <th>COMPANY</th>
+          <th>LOCATION</th>
+          <th>APPLIED</th>
+          <th>STATUS</th>
+          <th>MATCH</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Data Analyst</strong></td>
+          <td>TCS</td>
+          <td>Hyderabad</td>
+          <td>2 days ago</td>
+          <td><span class="status-badge s-screening">In Screening</span></td>
+          <td style="color:#3b82f6;font-weight:600">94%</td>
+        </tr>
+        <tr>
+          <td><strong>Business Analyst</strong></td>
+          <td>Infosys</td>
+          <td>Bengaluru</td>
+          <td>3 days ago</td>
+          <td><span class="status-badge s-interview">Interview Set</span></td>
+          <td style="color:#3b82f6;font-weight:600">87%</td>
+        </tr>
+        <tr>
+          <td><strong>SQL Developer</strong></td>
+          <td>Wipro</td>
+          <td>Remote</td>
+          <td>5 days ago</td>
+          <td><span class="status-badge s-applied">Applied</span></td>
+          <td style="color:#a78bfa;font-weight:600">79%</td>
+        </tr>
+        <tr>
+          <td><strong>Analyst Trainee</strong></td>
+          <td>Accenture</td>
+          <td>Hyderabad</td>
+          <td>1 week ago</td>
+          <td><span class="status-badge s-rejected">Not Selected</span></td>
+          <td style="color:#7a96b8;font-weight:600">72%</td>
+        </tr>
+        <tr>
+          <td><strong>Data Operations</strong></td>
+          <td>Cognizant</td>
+          <td>Pune</td>
+          <td>2 weeks ago</td>
+          <td><span class="status-badge s-offered">Offer Received!</span></td>
+          <td style="color:#22c55e;font-weight:600">91%</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- TAB: RESUME INSIGHTS -->
+  <div class="tab-content" id="tab-resume">
+    <div class="resume-section">
+      <div class="resume-card">
+        <h3>📊 Skill Strength</h3>
+        <div class="skill-bar-item">
+          <div class="skill-bar-header"><strong>SQL</strong><span>88%</span></div>
+          <div class="sbar"><div class="sbar-fill" style="width:88%"></div></div>
+        </div>
+        <div class="skill-bar-item">
+          <div class="skill-bar-header"><strong>Python</strong><span>75%</span></div>
+          <div class="sbar"><div class="sbar-fill" style="width:75%"></div></div>
+        </div>
+        <div class="skill-bar-item">
+          <div class="skill-bar-header"><strong>Data Analysis</strong><span>70%</span></div>
+          <div class="sbar"><div class="sbar-fill" style="width:70%"></div></div>
+        </div>
+        <div class="skill-bar-item">
+          <div class="skill-bar-header"><strong>Excel</strong><span>82%</span></div>
+          <div class="sbar"><div class="sbar-fill" style="width:82%"></div></div>
+        </div>
+        <div class="skill-bar-item">
+          <div class="skill-bar-header"><strong>Java / Android</strong><span>65%</span></div>
+          <div class="sbar"><div class="sbar-fill" style="width:65%"></div></div>
+        </div>
+        <div class="skill-bar-item">
+          <div class="skill-bar-header"><strong>Power BI</strong><span style="color:#ef4444">Not found</span></div>
+          <div class="sbar"><div class="sbar-fill" style="width:5%;background:#ef4444"></div></div>
+        </div>
+      </div>
+
+      <div class="resume-card">
+        <h3>🎯 What Employers Want</h3>
+        <p style="font-size:0.82rem;color:var(--muted);margin-bottom:1rem">Most in-demand skills for Data Analyst roles right now</p>
+        <div class="skill-bar-item">
+          <div class="skill-bar-header"><strong>SQL</strong><span>97% jobs require</span></div>
+          <div class="sbar"><div class="sbar-fill" style="width:97%"></div></div>
+        </div>
+        <div class="skill-bar-item">
+          <div class="skill-bar-header"><strong>Python</strong><span>89% jobs require</span></div>
+          <div class="sbar"><div class="sbar-fill" style="width:89%"></div></div>
+        </div>
+        <div class="skill-bar-item">
+          <div class="skill-bar-header"><strong>Power BI / Tableau</strong><span>76% jobs require</span></div>
+          <div class="sbar"><div class="sbar-fill" style="width:76%;background:linear-gradient(90deg,#f97316,#eab308)"></div></div>
+        </div>
+        <div class="skill-bar-item">
+          <div class="skill-bar-header"><strong>Excel</strong><span>85% jobs require</span></div>
+          <div class="sbar"><div class="sbar-fill" style="width:85%"></div></div>
+        </div>
+        <div class="skill-bar-item">
+          <div class="skill-bar-header"><strong>Communication</strong><span>92% jobs require</span></div>
+          <div class="sbar"><div class="sbar-fill" style="width:92%"></div></div>
+        </div>
+        <a href="upload.html" style="display:inline-block;margin-top:1rem;font-size:0.82rem;color:var(--accent);text-decoration:none">→ Update resume with missing skills</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: SAVED -->
+  <div class="tab-content" id="tab-saved">
+    <p style="color:var(--muted);font-size:0.9rem;padding:2rem 0 0.5rem">Jobs you've bookmarked</p>
+
+    <div class="job-card">
+      <div class="company-logo">🔵</div>
+      <div class="job-info">
+        <h3>Senior Data Analyst</h3>
+        <div class="job-meta">
+          <span>🏢 Amazon</span>
+          <span>📍 Hyderabad</span>
+          <span>💰 ₹10–16 LPA</span>
+        </div>
+      </div>
+      <div class="job-right">
+        <span class="match-badge">68% match</span>
+        <button class="save-btn" style="color:#ef4444;border-color:rgba(239,68,68,0.3)">🗑 Remove</button>
+      </div>
+    </div>
+
+    <div class="job-card">
+      <div class="company-logo">🟡</div>
+      <div class="job-info">
+        <h3>Data Scientist – Entry Level</h3>
+        <div class="job-meta">
+          <span>🏢 Google</span>
+          <span>📍 Bengaluru</span>
+          <span>💰 ₹18–25 LPA</span>
+        </div>
+      </div>
+      <div class="job-right">
+        <span class="match-badge">55% match</span>
+        <button class="save-btn" style="color:#ef4444;border-color:rgba(239,68,68,0.3)">🗑 Remove</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function switchTab(name) {
+    document.querySelectorAll('.tab-btn').forEach((b, i) => {
+      const names = ['matches','applications','resume','saved'];
+      b.classList.toggle('active', names[i] === name);
+    });
+    document.querySelectorAll('.tab-content').forEach(c => {
+      c.classList.toggle('active', c.id === 'tab-' + name);
+    });
+  }
+
+  document.querySelectorAll('.filter-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+    });
+  });
+
+  document.querySelectorAll('.save-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      btn.textContent = '✓ Saved';
+      btn.style.color = '#22c55e';
+      btn.style.borderColor = 'rgba(34,197,94,0.3)';
+    });
+  });
+</script>
+</body>
+</html>

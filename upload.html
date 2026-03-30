@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ResuAI – Upload Resume</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    :root{--bg:#050d1a;--bg2:#0a1628;--bg3:#0f1e35;--accent:#3b82f6;--accent2:#06b6d4;--text:#f0f6ff;--muted:#7a96b8;--border:rgba(59,130,246,0.15);--card-bg:rgba(15,30,53,0.7)}
+    body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+    .grid-bg{position:fixed;inset:0;z-index:0;background-image:linear-gradient(rgba(59,130,246,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(59,130,246,0.03) 1px,transparent 1px);background-size:60px 60px;pointer-events:none}
+    nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:1rem 5%;background:rgba(5,13,26,0.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+    .logo{font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;color:var(--text);text-decoration:none}
+    .logo span{color:var(--accent)}
+    .nav-links{display:flex;align-items:center;gap:1.5rem}
+    .nav-links a{color:var(--muted);text-decoration:none;font-size:0.88rem}
+    .nav-links a:hover{color:var(--text)}
+    .nav-links .active{color:var(--accent)}
+    .nav-user{display:flex;align-items:center;gap:0.6rem}
+    .avatar-sm{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700}
+    main{padding:7rem 5% 4rem;max-width:1000px;margin:0 auto;position:relative;z-index:1}
+    .page-header{margin-bottom:2.5rem}
+    .page-header h1{font-family:'Syne',sans-serif;font-size:1.9rem;font-weight:800;letter-spacing:-0.5px;margin-bottom:0.4rem}
+    .page-header p{color:var(--muted);font-size:0.95rem}
+    .upload-steps{display:flex;gap:0;margin-bottom:2.5rem}
+    .ustep{flex:1;padding:0.8rem 1rem;border-bottom:2px solid var(--border);font-size:0.82rem;color:var(--muted);display:flex;align-items:center;gap:0.5rem}
+    .ustep.active{border-color:var(--accent);color:var(--accent)}
+    .ustep.done{border-color:var(--accent2);color:var(--accent2)}
+    .ustep-num{width:22px;height:22px;border-radius:50%;background:var(--bg3);border:1px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:0.72rem;font-weight:600;flex-shrink:0}
+    .step-panel{display:none}
+    .step-panel.active{display:block}
+    /* Step 1 – Upload */
+    .upload-zone{border:2px dashed rgba(59,130,246,0.25);border-radius:20px;padding:4rem 2rem;text-align:center;cursor:pointer;transition:all 0.25s;position:relative;overflow:hidden;background:rgba(59,130,246,0.02)}
+    .upload-zone:hover,.upload-zone.dragover{border-color:var(--accent);background:rgba(59,130,246,0.05)}
+    .upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+    .upload-icon-big{font-size:3.5rem;margin-bottom:1rem;display:block}
+    .upload-zone h2{font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:700;margin-bottom:0.5rem}
+    .upload-zone p{color:var(--muted);font-size:0.9rem}
+    .format-badges{display:flex;justify-content:center;gap:0.5rem;margin-top:1rem;flex-wrap:wrap}
+    .badge-small{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:0.25rem 0.7rem;font-size:0.76rem;color:var(--muted)}
+    .tips-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-top:2rem}
+    .tip-card{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:1.2rem}
+    .tip-card h4{font-size:0.88rem;font-weight:600;margin-bottom:0.4rem}
+    .tip-card p{color:var(--muted);font-size:0.8rem;line-height:1.6}
+    /* Step 2 – Analyzing */
+    .analyzing-wrap{text-align:center;padding:3rem 1rem}
+    .ai-brain{font-size:4rem;margin-bottom:1.5rem;animation:pulse 2s infinite}
+    @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+    .analyzing-title{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:700;margin-bottom:0.5rem}
+    .analyzing-sub{color:var(--muted);font-size:0.9rem;margin-bottom:2rem}
+    .ai-tasks{display:flex;flex-direction:column;gap:0.7rem;max-width:420px;margin:0 auto 2rem}
+    .ai-task{display:flex;align-items:center;gap:0.8rem;background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:0.7rem 1rem;font-size:0.88rem}
+    .task-icon{font-size:1rem;min-width:20px}
+    .task-label{flex:1;color:var(--muted)}
+    .task-status{font-size:0.78rem;font-weight:500}
+    .task-status.done{color:#22c55e}
+    .task-status.running{color:var(--accent2)}
+    .task-status.pending{color:var(--muted)}
+    .scan-bar{height:4px;background:var(--bg3);border-radius:100px;overflow:hidden;max-width:420px;margin:0 auto}
+    .scan-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:100px;transition:width 0.4s ease;width:0}
+    /* Step 3 – Results */
+    .results-grid{display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-bottom:2rem}
+    @media(max-width:700px){.results-grid{grid-template-columns:1fr}}
+    .result-card{background:var(--card-bg);border:1px solid var(--border);border-radius:16px;padding:1.5rem}
+    .result-card h3{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;margin-bottom:1rem;display:flex;align-items:center;gap:0.5rem}
+    .skill-tags{display:flex;flex-wrap:wrap;gap:0.4rem}
+    .skill-tag{background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.2);border-radius:6px;padding:0.25rem 0.65rem;font-size:0.78rem;color:#93c5fd}
+    .skill-tag.good{background:rgba(34,197,94,0.1);border-color:rgba(34,197,94,0.2);color:#86efac}
+    .skill-tag.warn{background:rgba(234,179,8,0.1);border-color:rgba(234,179,8,0.2);color:#fde047}
+    .score-circle{width:100px;height:100px;border-radius:50%;background:conic-gradient(var(--accent) 0% 82%,var(--bg3) 82%);display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;position:relative}
+    .score-circle::before{content:'';position:absolute;width:74px;height:74px;border-radius:50%;background:var(--card-bg)}
+    .score-num{position:relative;z-index:1;font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800;color:var(--accent)}
+    .stat-row{display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;border-bottom:1px solid var(--border);font-size:0.85rem}
+    .stat-row:last-child{border:none}
+    .stat-row span{color:var(--muted)}
+    .stat-row strong{color:var(--text)}
+    .improve-item{display:flex;align-items:flex-start;gap:0.6rem;margin-bottom:0.7rem;font-size:0.85rem}
+    .improve-item::before{content:'→';color:var(--accent);font-weight:700;flex-shrink:0;margin-top:2px}
+    .improve-item p{color:var(--muted);line-height:1.5}
+    .job-match-item{display:flex;align-items:center;gap:1rem;padding:0.8rem;background:var(--bg3);border-radius:10px;margin-bottom:0.6rem;border:1px solid var(--border);transition:border-color 0.2s;cursor:pointer}
+    .job-match-item:hover{border-color:rgba(59,130,246,0.4)}
+    .match-pct{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;min-width:46px}
+    .match-details{flex:1}
+    .match-details strong{display:block;font-size:0.88rem;font-weight:500}
+    .match-details span{font-size:0.78rem;color:var(--muted)}
+    .mini-bar{height:3px;background:rgba(59,130,246,0.1);border-radius:100px;margin-top:3px;overflow:hidden}
+    .mini-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:100px}
+    .apply-btn{font-size:0.75rem;background:rgba(59,130,246,0.15);color:var(--accent);border:none;border-radius:6px;padding:0.3rem 0.7rem;cursor:pointer;white-space:nowrap}
+    .apply-btn:hover{background:rgba(59,130,246,0.25)}
+    .action-row{display:flex;gap:1rem;justify-content:center;margin-top:2rem;flex-wrap:wrap}
+    .btn-primary{background:var(--accent);color:#fff;border:none;border-radius:10px;padding:0.8rem 1.8rem;font-family:'DM Sans',sans-serif;font-size:0.92rem;font-weight:500;cursor:pointer;text-decoration:none;transition:background 0.2s,transform 0.15s}
+    .btn-primary:hover{background:#2563eb;transform:translateY(-1px)}
+    .btn-outline{background:transparent;color:var(--text);border:1px solid var(--border);border-radius:10px;padding:0.8rem 1.8rem;font-family:'DM Sans',sans-serif;font-size:0.92rem;cursor:pointer;text-decoration:none;transition:border-color 0.2s}
+    .btn-outline:hover{border-color:var(--accent)}
+    .full-span{grid-column:1/-1}
+  </style>
+</head>
+<body>
+<div class="grid-bg"></div>
+
+<nav>
+  <a class="logo" href="index.html">Resu<span>AI</span></a>
+  <div class="nav-links">
+    <a href="dashboard.html">Dashboard</a>
+    <a href="jobs.html">Browse Jobs</a>
+    <a href="upload.html" class="active">Upload</a>
+  </div>
+  <div class="nav-user">
+    <div class="avatar-sm">KG</div>
+    <span style="font-size:0.88rem">Keerthi</span>
+  </div>
+</nav>
+
+<main>
+  <div class="page-header">
+    <h1>Upload Your Resume</h1>
+    <p>Let our AI analyze your profile and match you with the best opportunities</p>
+  </div>
+
+  <div class="upload-steps">
+    <div class="ustep active" id="step1tab"><span class="ustep-num">1</span> Upload</div>
+    <div class="ustep" id="step2tab"><span class="ustep-num">2</span> AI Analysis</div>
+    <div class="ustep" id="step3tab"><span class="ustep-num">3</span> Results</div>
+  </div>
+
+  <!-- STEP 1 -->
+  <div class="step-panel active" id="panel1">
+    <div class="upload-zone" id="dropZone" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+      <input type="file" accept=".pdf,.doc,.docx,.txt" onchange="handleFile(event)"/>
+      <span class="upload-icon-big">📄</span>
+      <h2>Drop your resume here</h2>
+      <p>or click to browse files from your computer</p>
+      <div class="format-badges">
+        <span class="badge-small">PDF</span>
+        <span class="badge-small">DOCX</span>
+        <span class="badge-small">DOC</span>
+        <span class="badge-small">TXT</span>
+        <span class="badge-small">Max 5MB</span>
+      </div>
+    </div>
+
+    <div class="tips-grid">
+      <div class="tip-card">
+        <h4>💡 Use a clean format</h4>
+        <p>Avoid tables, columns and images in your resume. Plain text structure gives better AI parsing accuracy.</p>
+      </div>
+      <div class="tip-card">
+        <h4>📝 Include all skills</h4>
+        <p>List SQL, Python, Excel, Power BI and any tools you know. AI ranks you higher with complete skill sets.</p>
+      </div>
+      <div class="tip-card">
+        <h4>🎯 Add keywords</h4>
+        <p>Match your resume language to job descriptions. Use terms like "data analysis", "dashboards", "reporting".</p>
+      </div>
+      <div class="tip-card">
+        <h4>📊 Quantify results</h4>
+        <p>Add numbers wherever possible: "Increased efficiency by 30%" is much stronger than "improved efficiency".</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="step-panel" id="panel2">
+    <div class="analyzing-wrap">
+      <div class="ai-brain">🤖</div>
+      <h2 class="analyzing-title">AI is Reading Your Resume</h2>
+      <p class="analyzing-sub">Our NLP engine is extracting and analyzing your profile...</p>
+
+      <div class="ai-tasks">
+        <div class="ai-task" id="task1">
+          <span class="task-icon">📄</span>
+          <span class="task-label">Parsing resume structure</span>
+          <span class="task-status pending" id="t1s">Waiting...</span>
+        </div>
+        <div class="ai-task" id="task2">
+          <span class="task-icon">🔍</span>
+          <span class="task-label">Extracting skills & experience</span>
+          <span class="task-status pending" id="t2s">Waiting...</span>
+        </div>
+        <div class="ai-task" id="task3">
+          <span class="task-icon">📊</span>
+          <span class="task-label">Scoring resume quality</span>
+          <span class="task-status pending" id="t3s">Waiting...</span>
+        </div>
+        <div class="ai-task" id="task4">
+          <span class="task-icon">🎯</span>
+          <span class="task-label">Matching with job database</span>
+          <span class="task-status pending" id="t4s">Waiting...</span>
+        </div>
+        <div class="ai-task" id="task5">
+          <span class="task-icon">✨</span>
+          <span class="task-label">Generating recommendations</span>
+          <span class="task-status pending" id="t5s">Waiting...</span>
+        </div>
+      </div>
+
+      <div class="scan-bar"><div class="scan-fill" id="scanFill"></div></div>
+      <p style="color:var(--muted);font-size:0.8rem;margin-top:0.6rem" id="scanPct">0% complete</p>
+    </div>
+  </div>
+
+  <!-- STEP 3 – RESULTS -->
+  <div class="step-panel" id="panel3">
+    <div class="results-grid">
+
+      <div class="result-card" style="text-align:center">
+        <h3 style="justify-content:center">🏆 Resume Score</h3>
+        <div class="score-circle"><span class="score-num">82</span></div>
+        <p style="color:var(--muted);font-size:0.82rem;margin-bottom:1rem">Good profile — room to improve</p>
+        <div class="stat-row"><span>Completeness</span><strong>90%</strong></div>
+        <div class="stat-row"><span>Skill depth</span><strong>78%</strong></div>
+        <div class="stat-row"><span>Experience match</span><strong>85%</strong></div>
+        <div class="stat-row"><span>Keyword density</span><strong>72%</strong></div>
+      </div>
+
+      <div class="result-card">
+        <h3>🛠 Skills Detected</h3>
+        <p style="font-size:0.78rem;color:var(--muted);margin-bottom:0.8rem">Strong skills found in your resume</p>
+        <div class="skill-tags">
+          <span class="skill-tag good">SQL</span>
+          <span class="skill-tag good">Python</span>
+          <span class="skill-tag good">Excel</span>
+          <span class="skill-tag">Java</span>
+          <span class="skill-tag">Android Studio</span>
+          <span class="skill-tag">Data Analysis</span>
+          <span class="skill-tag">MySQL</span>
+          <span class="skill-tag good">Problem Solving</span>
+          <span class="skill-tag warn">Power BI (add this)</span>
+          <span class="skill-tag warn">Tableau (add this)</span>
+        </div>
+        <p style="font-size:0.78rem;color:var(--muted);margin-top:1rem;margin-bottom:0.4rem">Missing keywords (add to resume):</p>
+        <div class="skill-tags">
+          <span class="skill-tag warn">ETL</span>
+          <span class="skill-tag warn">Dashboard reporting</span>
+          <span class="skill-tag warn">Data visualization</span>
+        </div>
+      </div>
+
+      <div class="result-card">
+        <h3>📈 Improve Your Score</h3>
+        <div class="improve-item"><p>Add a professional summary at the top of your resume (2–3 sentences)</p></div>
+        <div class="improve-item"><p>Include Power BI or Tableau to your skills — highly demanded for Data Analyst roles</p></div>
+        <div class="improve-item"><p>Quantify your project results with numbers and percentages</p></div>
+        <div class="improve-item"><p>Add "Certifications" section — Google Data Analytics cert is free and valued</p></div>
+        <div class="improve-item"><p>Include a GitHub or portfolio link to showcase your projects</p></div>
+      </div>
+
+      <div class="result-card">
+        <h3>🎯 Top Job Matches</h3>
+        <div class="job-match-item" onclick="window.location='jobs.html'">
+          <span class="match-pct" style="color:#3b82f6">94%</span>
+          <div class="match-details">
+            <strong>Data Analyst – TCS</strong>
+            <span>Hyderabad · ₹4–7 LPA</span>
+            <div class="mini-bar"><div class="mini-fill" style="width:94%"></div></div>
+          </div>
+          <button class="apply-btn">Apply →</button>
+        </div>
+        <div class="job-match-item" onclick="window.location='jobs.html'">
+          <span class="match-pct" style="color:#06b6d4">87%</span>
+          <div class="match-details">
+            <strong>Business Analyst – Infosys</strong>
+            <span>Bengaluru · ₹5–9 LPA</span>
+            <div class="mini-bar"><div class="mini-fill" style="width:87%;background:linear-gradient(90deg,#06b6d4,#22d3ee)"></div></div>
+          </div>
+          <button class="apply-btn">Apply →</button>
+        </div>
+        <div class="job-match-item" onclick="window.location='jobs.html'">
+          <span class="match-pct" style="color:#a78bfa">79%</span>
+          <div class="match-details">
+            <strong>SQL Developer – Wipro</strong>
+            <span>Remote · ₹3–6 LPA</span>
+            <div class="mini-bar"><div class="mini-fill" style="width:79%;background:linear-gradient(90deg,#8b5cf6,#a78bfa)"></div></div>
+          </div>
+          <button class="apply-btn">Apply →</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="action-row">
+      <a href="dashboard.html" class="btn-primary">Go to Dashboard →</a>
+      <a href="jobs.html" class="btn-outline">Browse All Jobs</a>
+      <button class="btn-outline" onclick="resetUpload()">Upload New Resume</button>
+    </div>
+  </div>
+</main>
+
+<script>
+  function handleDragOver(e) { e.preventDefault(); document.getElementById('dropZone').classList.add('dragover'); }
+  function handleDragLeave() { document.getElementById('dropZone').classList.remove('dragover'); }
+  function handleDrop(e) { e.preventDefault(); handleFile({ target: { files: e.dataTransfer.files } }); }
+
+  function handleFile(e) {
+    if (!e.target.files || !e.target.files[0]) return;
+    const file = e.target.files[0];
+    const zone = document.getElementById('dropZone');
+    zone.innerHTML = `<span class="upload-icon-big">✅</span><h2>${file.name}</h2><p style="color:var(--accent2)">${(file.size/1024).toFixed(0)} KB · Ready to analyze</p>`;
+    setTimeout(startAnalysis, 800);
+  }
+
+  function startAnalysis() {
+    document.getElementById('panel1').classList.remove('active');
+    document.getElementById('panel2').classList.add('active');
+    document.getElementById('step1tab').classList.remove('active');
+    document.getElementById('step1tab').classList.add('done');
+    document.getElementById('step2tab').classList.add('active');
+
+    const tasks = [
+      { id: 't1s', delay: 0, duration: 900 },
+      { id: 't2s', delay: 900, duration: 900 },
+      { id: 't3s', delay: 1800, duration: 700 },
+      { id: 't4s', delay: 2500, duration: 1000 },
+      { id: 't5s', delay: 3500, duration: 700 }
+    ];
+    const pcts = [0, 18, 40, 60, 80, 100];
+
+    tasks.forEach((t, i) => {
+      setTimeout(() => {
+        document.getElementById(t.id).textContent = 'Running...';
+        document.getElementById(t.id).className = 'task-status running';
+        document.getElementById('scanFill').style.width = pcts[i] + '%';
+        document.getElementById('scanPct').textContent = pcts[i] + '% complete';
+      }, t.delay);
+      setTimeout(() => {
+        document.getElementById(t.id).textContent = 'Done ✓';
+        document.getElementById(t.id).className = 'task-status done';
+        document.getElementById('scanFill').style.width = pcts[i+1] + '%';
+        document.getElementById('scanPct').textContent = pcts[i+1] + '% complete';
+      }, t.delay + t.duration);
+    });
+
+    setTimeout(showResults, 4500);
+  }
+
+  function showResults() {
+    document.getElementById('panel2').classList.remove('active');
+    document.getElementById('panel3').classList.add('active');
+    document.getElementById('step2tab').classList.remove('active');
+    document.getElementById('step2tab').classList.add('done');
+    document.getElementById('step3tab').classList.add('active');
+    document.getElementById('step3tab').classList.add('done');
+  }
+
+  function resetUpload() {
+    location.reload();
+  }
+</script>
+</body>
+</html>

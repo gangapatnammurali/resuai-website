@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ResuAI – Sign In</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    :root{--bg:#050d1a;--bg2:#0a1628;--bg3:#0f1e35;--accent:#3b82f6;--accent2:#06b6d4;--text:#f0f6ff;--muted:#7a96b8;--border:rgba(59,130,246,0.15);--card-bg:rgba(15,30,53,0.7);--error:#ef4444}
+    body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+    .grid-bg{position:fixed;inset:0;z-index:0;background-image:linear-gradient(rgba(59,130,246,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(59,130,246,0.03) 1px,transparent 1px);background-size:60px 60px;pointer-events:none}
+    .glow{position:fixed;top:-200px;left:50%;transform:translateX(-50%);width:600px;height:400px;background:radial-gradient(ellipse,rgba(59,130,246,0.1),transparent 70%);z-index:0;pointer-events:none}
+    nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:1.1rem 6%;background:rgba(5,13,26,0.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+    .logo{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:var(--text);text-decoration:none}
+    .logo span{color:var(--accent)}
+    .nav-right{display:flex;align-items:center;gap:1rem}
+    .nav-btn{background:var(--accent);border:none;color:#fff;padding:0.5rem 1.2rem;border-radius:8px;font-size:0.88rem;cursor:pointer;text-decoration:none}
+    main{flex:1;display:flex;min-height:100vh;position:relative;z-index:1}
+    .split-left{flex:1;display:none;background:linear-gradient(135deg,var(--bg2),var(--bg3));border-right:1px solid var(--border);padding:5rem 4rem;flex-direction:column;justify-content:center}
+    @media(min-width:900px){.split-left{display:flex}}
+    .split-left h2{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;letter-spacing:-0.5px;margin-bottom:1rem}
+    .split-left p{color:var(--muted);font-size:0.95rem;line-height:1.7;margin-bottom:2.5rem}
+    .testimonial{background:var(--card-bg);border:1px solid var(--border);border-radius:16px;padding:1.5rem;margin-top:1.5rem}
+    .testimonial p{color:var(--muted);font-size:0.88rem;font-style:italic;margin-bottom:1rem}
+    .t-author{display:flex;align-items:center;gap:0.7rem}
+    .avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.85rem}
+    .t-author strong{display:block;font-size:0.85rem;font-weight:500}
+    .t-author span{font-size:0.78rem;color:var(--muted)}
+    .feature-list{list-style:none;display:flex;flex-direction:column;gap:0.8rem}
+    .feature-list li{display:flex;align-items:center;gap:0.7rem;color:var(--muted);font-size:0.9rem}
+    .feature-list li::before{content:'✓';color:var(--accent2);font-weight:700;font-size:0.9rem}
+    .split-right{flex:1;display:flex;align-items:center;justify-content:center;padding:7rem 2rem 3rem}
+    .auth-container{width:100%;max-width:420px}
+    .auth-header{text-align:center;margin-bottom:2rem}
+    .auth-header h1{font-family:'Syne',sans-serif;font-size:1.9rem;font-weight:800;letter-spacing:-0.5px;margin-bottom:0.5rem}
+    .auth-header p{color:var(--muted);font-size:0.92rem}
+    .auth-card{background:var(--card-bg);border:1px solid var(--border);border-radius:20px;padding:2.2rem;backdrop-filter:blur(10px)}
+    .form-group{margin-bottom:1.2rem}
+    label{display:block;font-size:0.83rem;color:var(--muted);margin-bottom:0.4rem;font-weight:500}
+    input[type=email],input[type=password]{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:0.75rem 1rem;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.92rem;outline:none;transition:border-color 0.2s}
+    input:focus{border-color:var(--accent)}
+    .password-wrap{position:relative}
+    .password-wrap input{padding-right:2.8rem}
+    .eye-btn{position:absolute;right:0.8rem;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem}
+    .row-between{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.4rem}
+    .checkbox-inline{display:flex;align-items:center;gap:0.5rem}
+    .checkbox-inline input{accent-color:var(--accent);width:15px;height:15px}
+    .checkbox-inline label{font-size:0.82rem;color:var(--muted);margin:0}
+    .forgot{font-size:0.82rem;color:var(--accent);text-decoration:none}
+    .forgot:hover{text-decoration:underline}
+    .btn-submit{width:100%;background:var(--accent);color:#fff;border:none;border-radius:10px;padding:0.9rem;font-family:'DM Sans',sans-serif;font-size:0.95rem;font-weight:500;cursor:pointer;transition:background 0.2s,transform 0.15s,box-shadow 0.2s}
+    .btn-submit:hover{background:#2563eb;transform:translateY(-1px);box-shadow:0 8px 24px rgba(59,130,246,0.3)}
+    .btn-submit:disabled{background:#1e3a5f;cursor:not-allowed;transform:none}
+    .divider{display:flex;align-items:center;gap:0.8rem;margin:1.4rem 0;color:var(--muted);font-size:0.82rem}
+    .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+    .social-btns{display:grid;grid-template-columns:1fr 1fr;gap:0.7rem}
+    .social-btn{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:0.7rem;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.85rem;cursor:pointer;transition:border-color 0.2s;display:flex;align-items:center;justify-content:center;gap:0.5rem}
+    .social-btn:hover{border-color:var(--accent)}
+    .auth-footer{text-align:center;margin-top:1.5rem;font-size:0.88rem;color:var(--muted)}
+    .auth-footer a{color:var(--accent);text-decoration:none}
+    .error-banner{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:10px;padding:0.7rem 1rem;font-size:0.85rem;color:#fca5a5;margin-bottom:1rem;display:none}
+  </style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="glow"></div>
+
+<nav>
+  <a class="logo" href="index.html">Resu<span>AI</span></a>
+  <div class="nav-right">
+    <span style="color:var(--muted);font-size:0.9rem">New here?</span>
+    <a class="nav-btn" href="signup.html">Create Account</a>
+  </div>
+</nav>
+
+<main>
+  <div class="split-left">
+    <h2>Welcome Back to ResuAI</h2>
+    <p>Your AI-powered career platform that matches you with the right opportunities based on your unique skills and experience.</p>
+    <ul class="feature-list">
+      <li>AI resume screening & analysis</li>
+      <li>Smart job matching with 94%+ accuracy</li>
+      <li>Real-time application tracking</li>
+      <li>Resume improvement recommendations</li>
+    </ul>
+    <div class="testimonial">
+      <p>"ResuAI matched me with a Data Analyst role at TCS within 3 days of uploading my resume. The AI ranking was spot on!"</p>
+      <div class="t-author">
+        <div class="avatar">KG</div>
+        <div>
+          <strong>Keerthi G.</strong>
+          <span>Data Analyst, TCS Hyderabad</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="split-right">
+    <div class="auth-container">
+      <div class="auth-header">
+        <h1>Sign In</h1>
+        <p>Access your dashboard and job matches</p>
+      </div>
+
+      <div class="auth-card">
+        <div class="error-banner" id="errorBanner">❌ Invalid email or password. Please try again.</div>
+
+        <form onsubmit="handleLogin(event)">
+          <div class="form-group">
+            <label>Email Address</label>
+            <input type="email" id="loginEmail" placeholder="you@example.com" required/>
+          </div>
+
+          <div class="form-group">
+            <label>Password</label>
+            <div class="password-wrap">
+              <input type="password" id="loginPass" placeholder="Enter your password" required/>
+              <button type="button" class="eye-btn" onclick="togglePass()">👁</button>
+            </div>
+          </div>
+
+          <div class="row-between">
+            <div class="checkbox-inline">
+              <input type="checkbox" id="remember"/>
+              <label for="remember">Remember me</label>
+            </div>
+            <a href="#" class="forgot">Forgot password?</a>
+          </div>
+
+          <button type="submit" class="btn-submit" id="loginBtn">Sign In →</button>
+        </form>
+
+        <div class="divider">or continue with</div>
+        <div class="social-btns">
+          <button class="social-btn" onclick="window.location='dashboard.html'">🔵 Google</button>
+          <button class="social-btn" onclick="window.location='dashboard.html'">🔗 LinkedIn</button>
+        </div>
+      </div>
+
+      <p class="auth-footer">Don't have an account? <a href="signup.html">Sign Up Free</a></p>
+    </div>
+  </div>
+</main>
+
+<script>
+  function togglePass() {
+    const el = document.getElementById('loginPass');
+    el.type = el.type === 'password' ? 'text' : 'password';
+  }
+  function handleLogin(e) {
+    e.preventDefault();
+    const btn = document.getElementById('loginBtn');
+    btn.textContent = 'Signing in...';
+    btn.disabled = true;
+    setTimeout(() => {
+      window.location.href = 'dashboard.html';
+    }, 1200);
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ResuAI – JD Match & Gap Analysis</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#050d1a;--bg2:#0a1628;--bg3:#0f1e35;--accent:#3b82f6;--accent2:#06b6d4;--text:#f0f6ff;--muted:#7a96b8;--border:rgba(59,130,246,0.15);--card:rgba(15,30,53,0.8);--green:#22c55e;--red:#ef4444;--yellow:#eab308;--purple:#a78bfa}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.grid-bg{position:fixed;inset:0;z-index:0;background-image:linear-gradient(rgba(59,130,246,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(59,130,246,0.025) 1px,transparent 1px);background-size:60px 60px;pointer-events:none}
+nav{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:0.9rem 5%;background:rgba(5,13,26,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+.logo{font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;text-decoration:none;color:var(--text)}.logo span{color:var(--accent)}
+.nav-links{display:flex;gap:1.5rem}.nav-links a{color:var(--muted);text-decoration:none;font-size:0.88rem}.nav-links a:hover{color:var(--text)}
+.nav-links .active-link{color:var(--accent)}
+.new-badge{background:linear-gradient(90deg,var(--accent),var(--accent2));color:#fff;font-size:0.65rem;font-weight:700;padding:0.15rem 0.5rem;border-radius:100px;margin-left:0.3rem;vertical-align:middle}
+
+main{max-width:1100px;margin:0 auto;padding:2.5rem 4%;position:relative;z-index:1}
+.page-header{text-align:center;margin-bottom:2.5rem}
+.page-header .label{font-size:0.72rem;letter-spacing:2px;text-transform:uppercase;color:var(--accent2);margin-bottom:0.6rem}
+.page-header h1{font-family:'Syne',sans-serif;font-size:clamp(1.6rem,3.5vw,2.4rem);font-weight:800;letter-spacing:-0.5px;margin-bottom:0.6rem}
+.page-header p{color:var(--muted);font-size:0.92rem;max-width:520px;margin:0 auto}
+
+/* INPUT SECTION */
+.input-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem}
+@media(max-width:700px){.input-grid{grid-template-columns:1fr}}
+.input-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.5rem}
+.input-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+.input-card-header h3{font-family:'Syne',sans-serif;font-size:0.95rem;font-weight:700;display:flex;align-items:center;gap:0.5rem}
+.char-count{font-size:0.72rem;color:var(--muted)}
+textarea{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:0.9rem 1rem;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.85rem;line-height:1.65;resize:vertical;outline:none;min-height:200px;transition:border-color 0.2s}
+textarea:focus{border-color:var(--accent)}
+textarea::placeholder{color:var(--muted)}
+.sample-btn{background:transparent;border:1px solid var(--border);border-radius:7px;color:var(--muted);padding:0.3rem 0.75rem;font-size:0.75rem;cursor:pointer;transition:all 0.2s;font-family:'DM Sans',sans-serif}
+.sample-btn:hover{border-color:var(--accent);color:var(--accent)}
+.analyze-row{text-align:center;margin-bottom:2.5rem}
+.analyze-btn{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;border-radius:12px;padding:0.9rem 2.8rem;font-family:'DM Sans',sans-serif;font-size:1rem;font-weight:600;cursor:pointer;transition:transform 0.15s,box-shadow 0.2s;box-shadow:0 4px 20px rgba(59,130,246,0.25)}
+.analyze-btn:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(59,130,246,0.35)}
+.analyze-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none}
+
+/* LOADING */
+.loading-screen{display:none;text-align:center;padding:3rem 1rem}
+.loading-screen.show{display:block}
+.load-emoji{font-size:3rem;animation:spin 2s linear infinite;display:block;margin-bottom:1rem}
+@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+.load-title{font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;margin-bottom:0.5rem}
+.load-sub{color:var(--muted);font-size:0.88rem;margin-bottom:2rem}
+.load-steps{display:flex;flex-direction:column;gap:0.6rem;max-width:380px;margin:0 auto}
+.load-step{display:flex;align-items:center;gap:0.7rem;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:0.65rem 1rem;font-size:0.85rem}
+.load-step .ls-icon{font-size:1rem;min-width:20px}
+.load-step .ls-text{flex:1;color:var(--muted)}
+.load-step .ls-status{font-size:0.75rem}
+.ls-done{color:var(--green)}
+.ls-run{color:var(--accent2)}
+.ls-wait{color:#333}
+
+/* RESULTS */
+.results{display:none}
+.results.show{display:block}
+
+/* SCORE HEADER */
+.score-header{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:2rem;margin-bottom:1.5rem;display:grid;grid-template-columns:auto 1fr;gap:2rem;align-items:center}
+@media(max-width:600px){.score-header{grid-template-columns:1fr;text-align:center}}
+.big-score-wrap{position:relative;width:120px;height:120px;flex-shrink:0}
+.big-score-circle{width:120px;height:120px;border-radius:50%;display:flex;align-items:center;justify-content:center;position:relative}
+.big-score-circle svg{position:absolute;top:0;left:0;transform:rotate(-90deg)}
+.big-score-num{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;position:relative;z-index:1}
+.score-details h2{font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;margin-bottom:0.4rem}
+.score-details p{color:var(--muted);font-size:0.9rem;margin-bottom:1rem}
+.score-pills{display:flex;gap:0.6rem;flex-wrap:wrap}
+.spill{padding:0.35rem 0.9rem;border-radius:100px;font-size:0.78rem;font-weight:500}
+.spill-green{background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.25);color:#86efac}
+.spill-blue{background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.25);color:#93c5fd}
+.spill-yellow{background:rgba(234,179,8,0.1);border:1px solid rgba(234,179,8,0.25);color:#fde047}
+.spill-red{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.25);color:#fca5a5}
+
+/* ANALYSIS GRID */
+.analysis-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;margin-bottom:1.2rem}
+@media(max-width:700px){.analysis-grid{grid-template-columns:1fr}}
+.acard{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.4rem}
+.acard-title{font-family:'Syne',sans-serif;font-size:0.92rem;font-weight:700;margin-bottom:1.1rem;display:flex;align-items:center;gap:0.5rem}
+/* Skill tags */
+.skill-row{display:flex;align-items:center;justify-content:space-between;padding:0.5rem 0;border-bottom:1px solid rgba(59,130,246,0.06)}
+.skill-row:last-child{border:none}
+.skill-name{font-size:0.85rem;display:flex;align-items:center;gap:0.5rem}
+.skill-status{font-size:0.72rem;font-weight:600;padding:0.2rem 0.6rem;border-radius:100px}
+.ss-found{background:rgba(34,197,94,0.1);color:#86efac}
+.ss-partial{background:rgba(234,179,8,0.1);color:#fde047}
+.ss-missing{background:rgba(239,68,68,0.1);color:#fca5a5}
+.skill-icon{font-size:0.9rem}
+/* Gap items */
+.gap-item{display:flex;align-items:flex-start;gap:0.8rem;padding:0.7rem;background:var(--bg3);border-radius:10px;margin-bottom:0.6rem}
+.gap-item:last-child{margin:0}
+.gap-priority{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;flex-shrink:0}
+.gp-high{background:rgba(239,68,68,0.15);color:#fca5a5;border:1px solid rgba(239,68,68,0.2)}
+.gp-med{background:rgba(234,179,8,0.12);color:#fde047;border:1px solid rgba(234,179,8,0.2)}
+.gp-low{background:rgba(59,130,246,0.12);color:#93c5fd;border:1px solid rgba(59,130,246,0.2)}
+.gap-content{}
+.gap-content strong{display:block;font-size:0.85rem;margin-bottom:0.2rem}
+.gap-content p{font-size:0.78rem;color:var(--muted);line-height:1.5}
+.gap-content .fix-link{font-size:0.72rem;color:var(--accent);text-decoration:none;display:inline-block;margin-top:0.3rem}
+/* Strengths */
+.strength-item{display:flex;align-items:flex-start;gap:0.7rem;padding:0.55rem 0;border-bottom:1px solid rgba(59,130,246,0.06)}
+.strength-item:last-child{border:none}
+.s-check{color:var(--green);font-size:1rem;flex-shrink:0;margin-top:1px}
+.s-text{font-size:0.85rem}
+.s-sub{font-size:0.73rem;color:var(--muted);margin-top:0.1rem}
+/* Keyword analysis */
+.kw-item{display:flex;align-items:center;gap:0.7rem;margin-bottom:0.55rem}
+.kw-label{font-size:0.82rem;min-width:140px}
+.kw-bar{flex:1;height:6px;background:rgba(59,130,246,0.1);border-radius:100px;overflow:hidden}
+.kw-fill{height:100%;border-radius:100px;transition:width 1s ease}
+.kw-pct{font-size:0.75rem;font-weight:600;min-width:35px;text-align:right}
+
+/* FULL WIDTH CARDS */
+.full-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.5rem;margin-bottom:1.2rem}
+.full-card-title{font-family:'Syne',sans-serif;font-size:0.95rem;font-weight:700;margin-bottom:1.2rem;display:flex;align-items:center;gap:0.5rem}
+/* Action Plan */
+.action-steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem}
+.action-step{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:1.1rem;position:relative}
+.step-num{position:absolute;top:-10px;left:14px;background:var(--accent);color:#fff;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.72rem;font-weight:700}
+.action-step h4{font-size:0.85rem;font-weight:600;margin-top:0.4rem;margin-bottom:0.4rem}
+.action-step p{font-size:0.75rem;color:var(--muted);line-height:1.5}
+.action-step .timeline{font-size:0.7rem;color:var(--accent2);font-weight:500;margin-top:0.5rem}
+/* Cover Letter Tips */
+.cl-tips{display:flex;flex-direction:column;gap:0.6rem}
+.cl-tip{display:flex;gap:0.7rem;align-items:flex-start;font-size:0.85rem}
+.cl-tip::before{content:'💡';flex-shrink:0}
+.cl-tip-text{color:var(--muted);line-height:1.55}
+.cl-tip-text strong{color:var(--text)}
+/* Reset */
+.reset-row{text-align:center;margin-top:2rem;padding-bottom:3rem}
+.reset-btn{background:transparent;border:1px solid var(--border);color:var(--muted);padding:0.65rem 1.8rem;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:0.88rem;cursor:pointer;transition:all 0.2s}
+.reset-btn:hover{border-color:var(--accent);color:var(--accent)}
+
+/* Progress ring animation */
+@keyframes ringAnim{from{stroke-dashoffset:314}to{stroke-dashoffset:var(--target)}}
+.ring-circle{animation:ringAnim 1.5s ease forwards;stroke-dasharray:314}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+
+<nav>
+  <a class="logo" href="index.html">Resu<span>AI</span></a>
+  <div class="nav-links">
+    <a href="dashboard.html">Dashboard</a>
+    <a href="jobs.html">Browse Jobs</a>
+    <a href="upload.html">My Resume</a>
+    <a href="jd-match.html" class="active-link">JD Match <span class="new-badge">NEW</span></a>
+  </div>
+</nav>
+
+<main>
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <div class="label">🎯 New Feature</div>
+    <h1>Job Description Match & Gap Analysis</h1>
+    <p>Paste your resume and any job description. Our AI will tell you exactly how well you match — and what skills you're missing.</p>
+  </div>
+
+  <!-- INPUT SECTION -->
+  <div class="input-grid" id="inputSection">
+    <div class="input-card">
+      <div class="input-card-header">
+        <h3>📄 Your Resume</h3>
+        <button class="sample-btn" onclick="loadSampleResume()">Load Sample</button>
+      </div>
+      <textarea id="resumeText" placeholder="Paste your resume text here...&#10;&#10;Example:&#10;Keerthi Gangapatnam&#10;B.Tech Computer Science&#10;Skills: SQL, Python, Excel, Java, Data Analysis&#10;Projects: TejkeeDonor Android App&#10;Experience: Fresher (College projects)" oninput="countChars('resumeText','rc')"></textarea>
+      <div class="char-count"><span id="rc">0</span> characters</div>
+    </div>
+
+    <div class="input-card">
+      <div class="input-card-header">
+        <h3>💼 Job Description</h3>
+        <button class="sample-btn" onclick="loadSampleJD()">Load Sample JD</button>
+      </div>
+      <textarea id="jdText" placeholder="Paste the job description here...&#10;&#10;Example:&#10;Data Analyst – TCS Hyderabad&#10;Requirements:&#10;- 0-2 years experience&#10;- Strong SQL and Python skills&#10;- Experience with Power BI or Tableau&#10;- Data visualization and reporting&#10;- Good communication skills" oninput="countChars('jdText','jc')"></textarea>
+      <div class="char-count"><span id="jc">0</span> characters</div>
+    </div>
+  </div>
+
+  <div class="analyze-row" id="analyzeRow">
+    <button class="analyze-btn" id="analyzeBtn" onclick="startAnalysis()">🔍 Analyze Match & Gaps</button>
+  </div>
+
+  <!-- LOADING -->
+  <div class="loading-screen" id="loadingScreen">
+    <span class="load-emoji">⚙️</span>
+    <h2 class="load-title">Analyzing Your Match...</h2>
+    <p class="load-sub">AI is comparing your resume against the job description</p>
+    <div class="load-steps">
+      <div class="load-step"><span class="ls-icon">📄</span><span class="ls-text">Reading resume content</span><span class="ls-status ls-wait" id="ls1">Waiting...</span></div>
+      <div class="load-step"><span class="ls-icon">💼</span><span class="ls-text">Parsing job requirements</span><span class="ls-status ls-wait" id="ls2">Waiting...</span></div>
+      <div class="load-step"><span class="ls-icon">🔍</span><span class="ls-text">Matching skills & keywords</span><span class="ls-status ls-wait" id="ls3">Waiting...</span></div>
+      <div class="load-step"><span class="ls-icon">📊</span><span class="ls-text">Calculating match score</span><span class="ls-status ls-wait" id="ls4">Waiting...</span></div>
+      <div class="load-step"><span class="ls-icon">✍️</span><span class="ls-text">Generating gap analysis & tips</span><span class="ls-status ls-wait" id="ls5">Waiting...</span></div>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="results" id="resultsSection">
+
+    <!-- BIG SCORE -->
+    <div class="score-header" id="scoreHeader">
+      <div class="big-score-wrap">
+        <div class="big-score-circle">
+          <svg width="120" height="120" viewBox="0 0 120 120">
+            <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(59,130,246,0.1)" stroke-width="10"/>
+            <circle id="scoreRing" class="ring-circle" cx="60" cy="60" r="50" fill="none" stroke="url(#grad)" stroke-width="10" stroke-linecap="round" style="--target:94"/>
+            <defs>
+              <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" style="stop-color:#3b82f6"/>
+                <stop offset="100%" style="stop-color:#06b6d4"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          <span class="big-score-num" id="bigScoreNum">0%</span>
+        </div>
+      </div>
+      <div class="score-details">
+        <h2 id="scoreTitle">Strong Match!</h2>
+        <p id="scoreDesc">Your resume aligns well with this job description. A few targeted improvements could make you a top candidate.</p>
+        <div class="score-pills" id="scorePills"></div>
+      </div>
+    </div>
+
+    <!-- SKILLS MATCH + GAPS -->
+    <div class="analysis-grid">
+      <div class="acard">
+        <div class="acard-title">🛠 Skill-by-Skill Analysis</div>
+        <div id="skillsAnalysis"></div>
+      </div>
+      <div class="acard">
+        <div class="acard-title">⚠️ Gap Analysis — What's Missing</div>
+        <div id="gapAnalysis"></div>
+      </div>
+    </div>
+
+    <!-- KEYWORD + STRENGTHS -->
+    <div class="analysis-grid">
+      <div class="acard">
+        <div class="acard-title">🔑 Keyword Match Rate</div>
+        <div id="keywordAnalysis"></div>
+      </div>
+      <div class="acard">
+        <div class="acard-title">✅ Your Strengths for This Role</div>
+        <div id="strengthsAnalysis"></div>
+      </div>
+    </div>
+
+    <!-- ACTION PLAN -->
+    <div class="full-card">
+      <div class="full-card-title">🗺 Your 30-Day Action Plan to Get This Job</div>
+      <div class="action-steps" id="actionPlan"></div>
+    </div>
+
+    <!-- COVER LETTER TIPS -->
+    <div class="full-card">
+      <div class="full-card-title">✉️ Cover Letter Tips for This Specific Role</div>
+      <div class="cl-tips" id="coverLetterTips"></div>
+    </div>
+
+    <div class="reset-row">
+      <button class="reset-btn" onclick="resetTool()">🔄 Analyze a Different Job</button>
+    </div>
+  </div>
+</main>
+
+<script>
+// ── SAMPLE DATA ──────────────────────────────────────────────────────────────
+const sampleResume = `Keerthi Gangapatnam
+B.Tech Computer Science — Andhra Pradesh, India
+Email: keerthi@example.com | Phone: +91 98765 43210
+
+SKILLS
+Technical: SQL, Python, Java, Android Studio, Excel, MySQL, Data Analysis, Problem Solving
+Tools: Git, VS Code, Android SDK
+Soft Skills: Communication, Teamwork, Quick Learner
+
+PROJECTS
+TejkeeDonor — Food Donation Android App (Java, Android Studio)
+- Built splash screen, onboarding, login/signup, donation form
+- Dashboard with navigation drawer and live data fetching
+
+Data Analysis Mini Project — Sales Dashboard (Python, Excel)
+- Cleaned dataset of 5000+ records
+- Created summary charts and pivot tables
+
+EDUCATION
+B.Tech Computer Science — 2024 Batch
+GPA: 7.8 / 10
+
+CERTIFICATIONS
+- Python for Everybody (Coursera)
+- SQL Basics (HackerRank)`;
+
+const sampleJD = `Job Title: Data Analyst
+Company: TCS (Tata Consultancy Services)
+Location: Hyderabad, India
+Type: Full Time | Freshers Welcome
+
+JOB DESCRIPTION:
+We are looking for a motivated Data Analyst to join our analytics team. The candidate will work with business teams to analyze data, create reports, and drive insights.
+
+REQUIRED SKILLS:
+- Strong SQL skills — writing complex queries, joins, subqueries
+- Python for data analysis (pandas, numpy, matplotlib)
+- Power BI or Tableau for data visualization and dashboards
+- Microsoft Excel — pivot tables, VLOOKUP, data cleaning
+- Good communication and presentation skills
+- Understanding of statistics and data interpretation
+- Experience with data cleaning and ETL processes
+
+NICE TO HAVE:
+- Knowledge of cloud platforms (AWS/Azure)
+- Exposure to machine learning basics
+- Experience with large datasets
+
+RESPONSIBILITIES:
+- Analyze large datasets and identify trends
+- Create dashboards and reports for business stakeholders
+- Work closely with cross-functional teams
+- Present findings clearly to non-technical audiences
+
+EXPERIENCE: 0-2 years (Freshers with strong skills welcome)
+SALARY: ₹4–7 LPA`;
+
+function loadSampleResume(){ document.getElementById('resumeText').value = sampleResume; countChars('resumeText','rc'); }
+function loadSampleJD(){ document.getElementById('jdText').value = sampleJD; countChars('jdText','jc'); }
+function countChars(id, countId){ document.getElementById(countId).textContent = document.getElementById(id).value.length; }
+
+// ── ANALYSIS ENGINE ──────────────────────────────────────────────────────────
+function analyzeMatch(resume, jd) {
+  const r = resume.toLowerCase();
+  const j = jd.toLowerCase();
+
+  const jdSkills = [
+    { name:'SQL', required:true, keywords:['sql','query','queries','joins','subqueries'] },
+    { name:'Python', required:true, keywords:['python','pandas','numpy','matplotlib','scripting'] },
+    { name:'Power BI', required:true, keywords:['power bi','powerbi','bi','dax'] },
+    { name:'Tableau', required:false, keywords:['tableau','visualization','viz'] },
+    { name:'Excel', required:true, keywords:['excel','pivot','vlookup','spreadsheet'] },
+    { name:'Data Analysis', required:true, keywords:['data analysis','analyse','analyze','analytics'] },
+    { name:'Communication', required:true, keywords:['communication','presentation','stakeholder'] },
+    { name:'Statistics', required:true, keywords:['statistics','statistical','regression','correlation'] },
+    { name:'ETL / Data Cleaning', required:false, keywords:['etl','data cleaning','cleaning','pipeline'] },
+    { name:'AWS / Azure', required:false, keywords:['aws','azure','cloud','gcp'] },
+    { name:'Machine Learning', required:false, keywords:['machine learning','ml','scikit','model'] },
+    { name:'Data Visualization', required:true, keywords:['visualization','dashboard','report','charts'] },
+  ];
+
+  const results = jdSkills.map(skill => {
+    const inResume = skill.keywords.some(kw => r.includes(kw));
+    const inJD = skill.keywords.some(kw => j.includes(kw));
+    if (!inJD) return null;
+    return { ...skill, found: inResume };
+  }).filter(Boolean);
+
+  const required = results.filter(s => s.required);
+  const matched  = required.filter(s => s.found).length;
+  const total    = required.length;
+  const score    = Math.round((results.filter(s=>s.found).length / results.length) * 100);
+
+  // Keyword density
+  const jdWords   = j.split(/\s+/).filter(w=>w.length>3);
+  const resumeWords = r.split(/\s+/).filter(w=>w.length>3);
+  const kwMatches = jdWords.filter(w => resumeWords.includes(w)).length;
+  const kwRate    = Math.min(100, Math.round((kwMatches / jdWords.length) * 100 * 2.5));
+
+  return { results, score, matched, total, kwRate };
+}
+
+// ── START ANALYSIS ───────────────────────────────────────────────────────────
+function startAnalysis() {
+  const resume = document.getElementById('resumeText').value.trim();
+  const jd = document.getElementById('jdText').value.trim();
+
+  if(resume.length < 50) { alert('Please paste your resume text (at least 50 characters).'); return; }
+  if(jd.length < 50) { alert('Please paste the job description (at least 50 characters).'); return; }
+
+  document.getElementById('inputSection').style.display = 'none';
+  document.getElementById('analyzeRow').style.display = 'none';
+  document.getElementById('loadingScreen').classList.add('show');
+
+  // Animate loading steps
+  const steps = ['ls1','ls2','ls3','ls4','ls5'];
+  const labels = ['Done ✓','Done ✓','Done ✓','Done ✓','Done ✓'];
+  steps.forEach((id, i) => {
+    setTimeout(() => {
+      if(i > 0) { document.getElementById(steps[i-1]).textContent = 'Done ✓'; document.getElementById(steps[i-1]).className = 'ls-status ls-done'; }
+      document.getElementById(id).textContent = 'Running...';
+      document.getElementById(id).className = 'ls-status ls-run';
+    }, i * 600);
+  });
+
+  setTimeout(() => {
+    document.getElementById(steps[steps.length-1]).textContent = 'Done ✓';
+    document.getElementById(steps[steps.length-1]).className = 'ls-status ls-done';
+    setTimeout(() => showResults(resume, jd), 500);
+  }, steps.length * 600 + 200);
+}
+
+function showResults(resume, jd) {
+  document.getElementById('loadingScreen').classList.remove('show');
+  const analysis = analyzeMatch(resume, jd);
+  renderResults(analysis, resume, jd);
+  document.getElementById('resultsSection').classList.add('show');
+  window.scrollTo({top: 0, behavior:'smooth'});
+}
+
+// ── RENDER RESULTS ───────────────────────────────────────────────────────────
+function renderResults(a, resume, jd) {
+  const r = resume.toLowerCase();
+  const score = a.score;
+
+  // Score circle
+  const circumference = 314;
+  const offset = circumference - (score / 100) * circumference;
+  const ring = document.getElementById('scoreRing');
+  ring.style.setProperty('--target', offset);
+  ring.style.stroke = score >= 70 ? 'url(#grad)' : score >= 50 ? '#eab308' : '#ef4444';
+
+  // Animate number
+  let n = 0;
+  const interval = setInterval(() => {
+    n = Math.min(n + 2, score);
+    document.getElementById('bigScoreNum').textContent = n + '%';
+    if(n >= score) clearInterval(interval);
+  }, 25);
+
+  // Score label
+  let title, desc, pillClass, pillText;
+  if(score >= 80) {
+    title = '🔥 Excellent Match!';
+    desc = 'Your profile strongly aligns with this job. Apply with confidence — you are a top candidate!';
+    pillText = ['Strong Technical Fit','High ATS Score','Ready to Apply'];
+    pillClass = ['spill-green','spill-blue','spill-green'];
+  } else if(score >= 60) {
+    title = '👍 Good Match!';
+    desc = 'You have a solid foundation for this role. A few targeted improvements will make your application stand out.';
+    pillText = ['Good Skills Match','Minor Gaps Found','Apply with Edits'];
+    pillClass = ['spill-blue','spill-yellow','spill-blue'];
+  } else if(score >= 40) {
+    title = '⚡ Partial Match';
+    desc = 'You have some relevant skills but notable gaps exist. Spend 2–4 weeks addressing the gaps before applying.';
+    pillText = ['Some Skills Match','Key Gaps Found','Upskill First'];
+    pillClass = ['spill-yellow','spill-yellow','spill-red'];
+  } else {
+    title = '📚 Low Match — Upskill Needed';
+    desc = 'This role requires skills you haven\'t listed yet. Don\'t worry — a focused 1–2 month learning plan can change this!';
+    pillText = ['Large Skill Gap','Learning Plan Needed','Upskill Required'];
+    pillClass = ['spill-red','spill-red','spill-yellow'];
+  }
+  document.getElementById('scoreTitle').textContent = title;
+  document.getElementById('scoreDesc').textContent = desc;
+  document.getElementById('scorePills').innerHTML = pillText.map((t,i) => `<span class="spill ${pillClass[i]}">${t}</span>`).join('');
+
+  // SKILLS TABLE
+  const skillIcons = {found:'✅', missing:'❌', partial:'⚠️'};
+  document.getElementById('skillsAnalysis').innerHTML = a.results.map(s => `
+    <div class="skill-row">
+      <div class="skill-name">
+        <span class="skill-icon">${s.found ? '✅' : (s.required ? '❌' : '⚠️')}</span>
+        ${s.name} ${s.required ? '<span style="color:#7a96b8;font-size:0.7rem">(required)</span>' : '<span style="color:#444;font-size:0.7rem">(bonus)</span>'}
+      </div>
+      <span class="skill-status ${s.found ? 'ss-found' : (s.required ? 'ss-missing' : 'ss-partial')}">
+        ${s.found ? 'Found in Resume' : (s.required ? 'Missing!' : 'Not Mentioned')}
+      </span>
+    </div>
+  `).join('');
+
+  // GAPS
+  const gaps = a.results.filter(s => !s.found);
+  const gapHTML = gaps.length === 0 ?
+    '<div style="color:#22c55e;font-size:0.9rem;text-align:center;padding:1rem">🎉 No major gaps found! Great match.</div>' :
+    gaps.map((g, i) => {
+      const priority = g.required ? (i < 2 ? 'H' : 'M') : 'L';
+      const pClass = priority === 'H' ? 'gp-high' : priority === 'M' ? 'gp-med' : 'gp-low';
+      const pLabel = priority === 'H' ? 'HIGH' : priority === 'M' ? 'MED' : 'LOW';
+      const fixes = {
+        'Power BI': 'Free course: Microsoft Power BI on YouTube (10 hrs)',
+        'Tableau': 'Free: Tableau Public is free — practice on it',
+        'Statistics': 'Course: Statistics for Data Science on Coursera',
+        'ETL / Data Cleaning': 'Practice: Kaggle datasets (free)',
+        'AWS / Azure': 'Free tier: AWS Free Tier or Azure Student account',
+        'Machine Learning': 'Course: Andrew Ng ML on Coursera',
+        'Data Visualization': 'Practice: matplotlib + seaborn in Python projects',
+        'Communication': 'Tip: Practice explaining your projects in simple terms',
+      };
+      return `<div class="gap-item">
+        <div class="gap-priority ${pClass}">${pLabel}</div>
+        <div class="gap-content">
+          <strong>${g.name}</strong>
+          <p>${g.required ? 'This is a required skill for this job.' : 'Nice-to-have — adds bonus points to your application.'} ${fixes[g.name] || ''}</p>
+          ${fixes[g.name] ? `<a href="#" class="fix-link">→ How to fix this skill gap</a>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+  document.getElementById('gapAnalysis').innerHTML = gapHTML;
+
+  // KEYWORD MATCH
+  const categories = [
+    { label:'Technical Skills', pct: a.score, color:'#3b82f6' },
+    { label:'Job Role Keywords', pct: a.kwRate, color:'#06b6d4' },
+    { label:'Experience Level', pct: r.includes('fresher') || r.includes('0') ? 85 : 70, color:'#a78bfa' },
+    { label:'Education Match', pct: r.includes('b.tech') || r.includes('btech') || r.includes('computer') ? 90 : 65, color:'#22c55e' },
+    { label:'ATS Compatibility', pct: Math.min(95, a.score + 10), color:'#f97316' },
+  ];
+  document.getElementById('keywordAnalysis').innerHTML = categories.map(c => `
+    <div class="kw-item">
+      <span class="kw-label">${c.label}</span>
+      <div class="kw-bar"><div class="kw-fill" style="width:${c.pct}%;background:${c.color}"></div></div>
+      <span class="kw-pct" style="color:${c.color}">${c.pct}%</span>
+    </div>
+  `).join('');
+
+  // STRENGTHS
+  const strengths = a.results.filter(s => s.found);
+  const strengthHTML = strengths.length === 0 ?
+    '<p style="color:var(--muted);font-size:0.85rem">No matching skills detected. Please add more detail to your resume.</p>' :
+    strengths.map(s => `
+      <div class="strength-item">
+        <span class="s-check">✅</span>
+        <div>
+          <div class="s-text">${s.name}</div>
+          <div class="s-sub">${s.required ? 'Required skill — you have this!' : 'Bonus skill — adds value'}</div>
+        </div>
+      </div>
+    `).join('');
+  document.getElementById('strengthsAnalysis').innerHTML = strengthHTML;
+
+  // ACTION PLAN
+  const missingSkills = gaps.filter(g=>g.required).map(g=>g.name);
+  const actionSteps = [
+    { title:'Update Resume Now', desc:`Add keywords like "${missingSkills.slice(0,2).join('", "') || 'data visualization'}" to your resume. Even basic knowledge counts — list all tools you've used.`, time:'Today — 30 min' },
+    { title:'Fix Skill Gaps', desc:`Start with ${missingSkills[0] || 'Power BI'} — it's the most requested missing skill. Find a free YouTube course and practice for 1 week.`, time:'Week 1 — 5 hrs' },
+    { title:'Build a Small Project', desc:`Create one project using the missing skills. Even a simple sales dashboard in ${missingSkills[0] || 'Power BI'} using free data shows employers you can do it.`, time:'Week 2–3 — 10 hrs' },
+    { title:'Apply with Confidence', desc:`After adding the new project to your resume, apply to this job. Your match score will be 80%+ and you'll stand out from 80% of applicants.`, time:'Week 4 — Apply!' },
+  ];
+  document.getElementById('actionPlan').innerHTML = actionSteps.map((s,i) => `
+    <div class="action-step">
+      <div class="step-num">${i+1}</div>
+      <h4>${s.title}</h4>
+      <p>${s.desc}</p>
+      <div class="timeline">⏱ ${s.time}</div>
+    </div>
+  `).join('');
+
+  // COVER LETTER TIPS
+  const clTips = [
+    { strong:'Opening:', text:`Mention the exact job title and company name. Say: "I am excited to apply for the <strong>Data Analyst role at TCS</strong>..."` },
+    { strong:'Highlight Match:', text:`Specifically mention your <strong>${strengths.slice(0,2).map(s=>s.name).join(' and ')}</strong> skills that match the job requirements.` },
+    { strong:'Address Gaps Positively:', text:`If you lack Power BI, say "I am currently learning Power BI and completed a practice project — I pick up tools quickly."` },
+    { strong:'Quantify Achievements:', text:`Add numbers: "Analyzed a dataset of 5,000+ records" sounds more impressive than "analyzed data".` },
+    { strong:'Strong Closing:', text:`End with: "I am a quick learner and genuinely excited about growing with TCS. I look forward to contributing from Day 1."` },
+  ];
+  document.getElementById('coverLetterTips').innerHTML = clTips.map(t => `
+    <div class="cl-tip">
+      <div class="cl-tip-text"><strong>${t.strong}</strong> ${t.text}</div>
+    </div>
+  `).join('');
+}
+
+function resetTool() {
+  document.getElementById('inputSection').style.display = 'grid';
+  document.getElementById('analyzeRow').style.display = 'block';
+  document.getElementById('resultsSection').classList.remove('show');
+  document.getElementById('loadingScreen').classList.remove('show');
+  ['ls1','ls2','ls3','ls4','ls5'].forEach(id => {
+    document.getElementById(id).textContent = 'Waiting...';
+    document.getElementById(id).className = 'ls-status ls-wait';
+  });
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
+</body>
+</html>
