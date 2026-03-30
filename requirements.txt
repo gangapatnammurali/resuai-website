@@ -1,28 +1,11 @@
-# ResuAI Backend — Python Dependencies
-# Install with: pip install -r requirements.txt
-
-# ─── Core Flask ───────────────────────────────────
 flask==3.0.3
 flask-sqlalchemy==3.1.1
 flask-jwt-extended==4.6.0
 flask-bcrypt==1.0.1
 flask-cors==4.0.1
-
-# ─── Database ─────────────────────────────────────
-# SQLite (built-in Python, no install needed for dev)
-# PostgreSQL driver for production (Render uses PostgreSQL)
-psycopg2-binary==2.9.9
 sqlalchemy==2.0.31
-
-# ─── Resume Parsing ───────────────────────────────
-pdfplumber==0.11.4          # Extract text from PDF files
-python-docx==1.1.2          # Extract text from DOCX files
-
-# ─── AI / NLP ─────────────────────────────────────
-spacy==3.7.5                # Named entity recognition (NLP)
-# After install, run: python -m spacy download en_core_web_sm
-
-# ─── Utilities ────────────────────────────────────
-python-dotenv==1.0.1        # Load .env environment variables
-werkzeug==3.0.3             # File handling, security
-gunicorn==22.0.0            # Production WSGI server (for Render)
+pdfplumber==0.11.4
+python-docx==1.1.2
+python-dotenv==1.0.1
+werkzeug==3.0.3
+gunicorn==22.0.0
